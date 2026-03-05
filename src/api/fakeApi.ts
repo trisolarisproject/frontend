@@ -1,4 +1,4 @@
-import type { Asset, Campaign, ConsultPayload, Video } from "../types";
+import type { AppDatabase, Asset, Campaign, ConsultPayload, Video } from "../types";
 import { loadDatabase, saveDatabase, updateDatabase } from "../store/storage";
 import { generateId } from "../utils/id";
 
@@ -9,6 +9,11 @@ const randomDelay = (min = 180, max = 420): Promise<void> => {
 
 const GENERATION_MS = 3000;
 const TICK_MS = 300;
+const FLOW_TASK_MS = {
+  consult: 8000,
+  research: 9000,
+  posting: 7000,
+} as const;
 
 const hashString = (value: string): number => {
   let hash = 0;
@@ -68,6 +73,154 @@ const createDummyVideos = (campaign: Campaign): Video[] => {
       hashtags: ["marketing", "campaign", "growth", `variant${n}`],
     };
   });
+};
+
+const defaultJourneyState = (): NonNullable<Campaign["journey"]> => ({
+  phase: "intake",
+  flowStep: 1,
+  feedbackLoops: 0,
+  maxFeedbackLoops: 3,
+  approved: false,
+  researchSummary: [],
+  strategySummary: [],
+  generatedAssets: {
+    videos: 0,
+    graphics: 0,
+    captions: 0,
+  },
+  activeTask: null,
+  taskProgress: 0,
+  taskStatusMessage: "Waiting for input.",
+  updatedAt: new Date().toISOString(),
+});
+
+const ensureJourney = (campaign: Campaign): Campaign => ({
+  ...campaign,
+  journey: campaign.journey ?? defaultJourneyState(),
+});
+
+const updateCampaignInDb = (
+  campaignId: string,
+  updater: (campaign: Campaign) => Campaign
+): Campaign => {
+  const nextDb = updateDatabase((db) => ({
+    ...db,
+    campaigns: db.campaigns.map((campaign) =>
+      campaign.id === campaignId ? updater(ensureJourney(campaign)) : campaign
+    ),
+  }));
+  const campaign = nextDb.campaigns.find((item) => item.id === campaignId);
+  if (!campaign) {
+    throw new Error("Campaign not found.");
+  }
+  return ensureJourney(campaign);
+};
+
+const finalizeFlowTasksIfReady = (db = loadDatabase()): AppDatabase => {
+  let changed = false;
+
+  const campaigns = db.campaigns.map((campaign) => {
+    const withJourney = ensureJourney(campaign);
+    const journey = withJourney.journey!;
+    if (!journey.activeTask || !journey.taskStartedAt) {
+      return withJourney;
+    }
+
+    const elapsed = Date.now() - new Date(journey.taskStartedAt).getTime();
+    const duration = FLOW_TASK_MS[journey.activeTask];
+    const progress = Math.max(0, Math.min(100, Math.floor((elapsed / duration) * 100)));
+
+    if (progress < 100) {
+      if (progress !== (journey.taskProgress ?? 0)) {
+        changed = true;
+      }
+      return {
+        ...withJourney,
+        journey: {
+          ...journey,
+          taskProgress: progress,
+          updatedAt: new Date().toISOString(),
+        },
+      } satisfies Campaign;
+    }
+
+    changed = true;
+
+    if (journey.activeTask === "consult") {
+      return {
+        ...withJourney,
+        journey: {
+          ...journey,
+          phase: "research",
+          flowStep: 3,
+          activeTask: null,
+          taskProgress: 100,
+          taskStatusMessage: "Consult complete. Ready for AI research.",
+          updatedAt: new Date().toISOString(),
+        },
+      } satisfies Campaign;
+    }
+
+    if (journey.activeTask === "research") {
+      return {
+        ...withJourney,
+        journey: {
+          ...journey,
+          phase: "generation",
+          flowStep: 4,
+          activeTask: null,
+          taskProgress: 100,
+          taskStatusMessage: "Research complete. Ready to post assets.",
+          researchSummary: [
+            "Audience interest peaks in evening scroll sessions.",
+            "Most responsive segment prefers benefit-first hooks.",
+            "Short urgency CTA performs best for this product category.",
+          ],
+          updatedAt: new Date().toISOString(),
+        },
+      } satisfies Campaign;
+    }
+
+    let videoIds = withJourney.videoIds;
+    if (videoIds.length === 0) {
+      const generatedVideos = createDummyVideos(withJourney);
+      db.videos = [...db.videos, ...generatedVideos];
+      videoIds = generatedVideos.map((video) => video.id);
+    }
+
+    return {
+      ...withJourney,
+      status: "done",
+      currentStep: 4,
+      videoIds,
+      sharing: {
+        tiktok: "shared",
+        sharedAt: new Date().toISOString(),
+      },
+      journey: {
+        ...journey,
+        phase: "complete",
+        flowStep: 4,
+        activeTask: null,
+        taskProgress: 100,
+        taskStatusMessage: "Assets posted successfully.",
+        generatedAssets: {
+          videos: Math.max(videoIds.length, 1),
+          graphics: 4,
+          captions: 6,
+        },
+        updatedAt: new Date().toISOString(),
+      },
+    } satisfies Campaign;
+  });
+
+  if (!changed) {
+    return db;
+  }
+
+  const next = { ...db, campaigns };
+  saveDatabase(next);
+  return next;
 };
 
 const finalizeGenerationIfReady = (db = loadDatabase()): AppDatabase => {
@@ -141,19 +294,20 @@ const finalizeGenerationIfReady = (db = loadDatabase()): AppDatabase => {
   return next;
 };
 
-import type { AppDatabase } from "../types";
-
 export const fakeApi = {
   async listCampaigns(): Promise<Campaign[]> {
     await randomDelay();
-    const db = finalizeGenerationIfReady();
-    return db.campaigns.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
+    return db.campaigns
+      .map((campaign) => ensureJourney(campaign))
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   },
 
   async getCampaign(campaignId: string): Promise<Campaign | null> {
     await randomDelay();
-    const db = finalizeGenerationIfReady();
-    return db.campaigns.find((campaign) => campaign.id === campaignId) ?? null;
+    const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
+    const campaign = db.campaigns.find((item) => item.id === campaignId);
+    return campaign ? ensureJourney(campaign) : null;
   },
 
   async createCampaign({ name }: { name: string }): Promise<Campaign> {
@@ -173,6 +327,7 @@ export const fakeApi = {
       sharing: {
         tiktok: "not_started",
       },
+      journey: defaultJourneyState(),
     };
 
     updateDatabase((db) => ({
@@ -180,7 +335,7 @@ export const fakeApi = {
       campaigns: [campaign, ...db.campaigns],
     }));
 
-    return campaign;
+    return ensureJourney(campaign);
   },
 
   async addAssets(campaignId: string, files: File[]): Promise<Campaign> {
@@ -279,7 +434,7 @@ export const fakeApi = {
 
   async pollCampaign(campaignId: string): Promise<Campaign | null> {
     await randomDelay(70, 150);
-    const db = finalizeGenerationIfReady();
+    const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
     return db.campaigns.find((campaign) => campaign.id === campaignId) ?? null;
   },
 
@@ -295,7 +450,7 @@ export const fakeApi = {
 
   async listVideos(campaignId: string): Promise<Video[]> {
     await randomDelay();
-    const db = finalizeGenerationIfReady();
+    const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
     return db.videos.filter((video) => video.campaignId === campaignId);
   },
 
@@ -348,5 +503,342 @@ export const fakeApi = {
     }
 
     return campaign;
+  },
+
+  async saveFlowStep1Intake(
+    campaignId: string,
+    payload: { productDescription: string; productLink?: string }
+  ): Promise<Campaign> {
+    await randomDelay(250, 500);
+    return updateCampaignInDb(campaignId, (campaign) => ({
+      ...campaign,
+      consult: {
+        productDescription: payload.productDescription.trim(),
+        targetAudience: campaign.consult?.targetAudience ?? "",
+        goal: campaign.consult?.goal ?? "sales",
+        tone: campaign.consult?.tone ?? "friendly",
+        keyPoints: campaign.consult?.keyPoints ?? [],
+      },
+      status: "consulting",
+      currentStep: 2,
+      journey: {
+        ...ensureJourney(campaign).journey!,
+        phase: "consult",
+        flowStep: 2,
+        productLink: payload.productLink?.trim(),
+        taskProgress: 0,
+        taskStatusMessage: "Intake saved. Ready for agentic consult.",
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  },
+
+  async startFlowStep2Consult(
+    campaignId: string,
+    answers: {
+      audienceDetails: string;
+      budgetRange: string;
+      timeline: string;
+      constraints: string;
+      goal: ConsultPayload["goal"];
+      tone: ConsultPayload["tone"];
+      keyPoints: string[];
+    }
+  ): Promise<Campaign> {
+    await randomDelay(180, 300);
+    return updateCampaignInDb(campaignId, (campaign) => ({
+      ...campaign,
+      consult: {
+        productDescription: campaign.consult?.productDescription ?? "",
+        targetAudience: answers.audienceDetails,
+        goal: answers.goal,
+        tone: answers.tone,
+        keyPoints: answers.keyPoints,
+      },
+      journey: {
+        ...ensureJourney(campaign).journey!,
+        phase: "consult",
+        flowStep: 2,
+        consultAnswers: {
+          audienceDetails: answers.audienceDetails,
+          budgetRange: answers.budgetRange,
+          timeline: answers.timeline,
+          constraints: answers.constraints,
+        },
+        activeTask: "consult",
+        taskStartedAt: new Date().toISOString(),
+        taskProgress: 0,
+        taskStatusMessage: "AI agent is analyzing your consult answers...",
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  },
+
+  async saveFlowConsultInputs(
+    campaignId: string,
+    answers: {
+      audienceDetails: string;
+      budgetRange: string;
+      timeline: string;
+      constraints: string;
+      goal: ConsultPayload["goal"];
+      tone: ConsultPayload["tone"];
+      keyPoints: string[];
+    }
+  ): Promise<Campaign> {
+    await randomDelay(160, 280);
+    return updateCampaignInDb(campaignId, (campaign) => ({
+      ...campaign,
+      consult: {
+        productDescription: campaign.consult?.productDescription ?? "",
+        targetAudience: answers.audienceDetails,
+        goal: answers.goal,
+        tone: answers.tone,
+        keyPoints: answers.keyPoints,
+      },
+      journey: {
+        ...ensureJourney(campaign).journey!,
+        phase: "consult",
+        flowStep: 2,
+        consultAnswers: {
+          audienceDetails: answers.audienceDetails,
+          budgetRange: answers.budgetRange,
+          timeline: answers.timeline,
+          constraints: answers.constraints,
+        },
+        activeTask: null,
+        taskStartedAt: undefined,
+        taskProgress: 0,
+        taskStatusMessage: "Consult inputs captured. Chat with the AI agent to finalize details.",
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  },
+
+  async startFlowStep3Research(campaignId: string): Promise<Campaign> {
+    await randomDelay(150, 260);
+    return updateCampaignInDb(campaignId, (campaign) => ({
+      ...campaign,
+      journey: {
+        ...ensureJourney(campaign).journey!,
+        phase: "research",
+        flowStep: 3,
+        activeTask: "research",
+        taskStartedAt: new Date().toISOString(),
+        taskProgress: 0,
+        taskStatusMessage: "AI research in progress. Gathering market and audience insights...",
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  },
+
+  async startFlowStep4Posting(campaignId: string): Promise<Campaign> {
+    await randomDelay(150, 260);
+    return updateCampaignInDb(campaignId, (campaign) => ({
+      ...campaign,
+      journey: {
+        ...ensureJourney(campaign).journey!,
+        phase: "generation",
+        flowStep: 4,
+        activeTask: "posting",
+        taskStartedAt: new Date().toISOString(),
+        taskProgress: 0,
+        taskStatusMessage: "AI is posting generated assets...",
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  },
+
+  async pollFlowStep(campaignId: string): Promise<Campaign | null> {
+    await randomDelay(100, 180);
+    const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
+    const campaign = db.campaigns.find((item) => item.id === campaignId);
+    return campaign ? ensureJourney(campaign) : null;
+  },
+
+  async saveJourneyInput(
+    campaignId: string,
+    payload: { productDescription: string; productLink?: string }
+  ): Promise<Campaign> {
+    await randomDelay(250, 500);
+    return updateCampaignInDb(campaignId, (campaign) => ({
+      ...campaign,
+      journey: {
+        ...ensureJourney(campaign).journey!,
+        phase: "consult",
+        productLink: payload.productLink?.trim(),
+        updatedAt: new Date().toISOString(),
+      },
+      consult: {
+        productDescription: payload.productDescription,
+        targetAudience: campaign.consult?.targetAudience ?? "",
+        goal: campaign.consult?.goal ?? "sales",
+        tone: campaign.consult?.tone ?? "friendly",
+        keyPoints: campaign.consult?.keyPoints ?? [],
+      },
+      status: "consulting",
+      currentStep: 2,
+    }));
+  },
+
+  async runAgenticResearch(campaignId: string): Promise<Campaign> {
+    await randomDelay(900, 1400);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      const researchSummary = [
+        "Audience segment with highest conversion is mobile-first shoppers aged 24-38.",
+        "Top-performing delivery windows are weekday evenings and Sunday afternoons.",
+        "Seasonal trend suggests urgency messaging before upcoming holiday period.",
+      ];
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          phase: "strategy",
+          researchSummary,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  },
+
+  async developStrategy(campaignId: string): Promise<Campaign> {
+    await randomDelay(800, 1200);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      const strategySummary = [
+        "Primary channel mix: TikTok short-form + retargeting creatives.",
+        "Creative angle: problem/solution hook in first 2 seconds.",
+        "Bid strategy: optimize for qualified clicks in first 72 hours.",
+      ];
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          phase: "generation",
+          strategySummary,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  },
+
+  async generateJourneyAssets(campaignId: string): Promise<Campaign> {
+    await randomDelay(1100, 1700);
+    const nextDb = updateDatabase((db) => {
+      let generatedVideoIds: string[] = [];
+      let generatedVideos: Video[] = [];
+
+      const campaigns = db.campaigns.map((campaign) => {
+        if (campaign.id !== campaignId) {
+          return campaign;
+        }
+        const withJourney = ensureJourney(campaign);
+        if (withJourney.videoIds.length === 0) {
+          generatedVideos = createDummyVideos(withJourney);
+          generatedVideoIds = generatedVideos.map((video) => video.id);
+        }
+        const finalVideoIds =
+          withJourney.videoIds.length > 0 ? withJourney.videoIds : generatedVideoIds;
+
+        return {
+          ...withJourney,
+          status: "done",
+          currentStep: 4,
+          videoIds: finalVideoIds,
+          generation: {
+            ...withJourney.generation,
+            progress: 100,
+            startedAt: withJourney.generation.startedAt ?? new Date().toISOString(),
+            finishedAt: new Date().toISOString(),
+          },
+          journey: {
+            ...withJourney.journey!,
+            phase: "review",
+            generatedAssets: {
+              videos: Math.max(finalVideoIds.length, 1),
+              graphics: 4,
+              captions: 6,
+            },
+            updatedAt: new Date().toISOString(),
+          },
+        } satisfies Campaign;
+      });
+
+      return {
+        ...db,
+        campaigns,
+        videos: generatedVideos.length > 0 ? [...db.videos, ...generatedVideos] : db.videos,
+      };
+    });
+
+    const campaign = nextDb.campaigns.find((item) => item.id === campaignId);
+    if (!campaign) {
+      throw new Error("Campaign not found.");
+    }
+    return ensureJourney(campaign);
+  },
+
+  async submitHumanFeedback(
+    campaignId: string,
+    payload: { approved: boolean; note?: string }
+  ): Promise<Campaign> {
+    await randomDelay(250, 500);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      const feedbackLoops = payload.approved ? journey.feedbackLoops : journey.feedbackLoops + 1;
+      const phase =
+        payload.approved || feedbackLoops >= journey.maxFeedbackLoops ? "launch_ready" : "generation";
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          approved: payload.approved || feedbackLoops >= journey.maxFeedbackLoops,
+          feedbackLoops,
+          lastFeedbackNote: payload.note?.trim(),
+          phase,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  },
+
+  async launchJourneyCampaign(campaignId: string): Promise<Campaign> {
+    await randomDelay(500, 900);
+    const campaign = updateCampaignInDb(campaignId, (current) => ({
+      ...current,
+      journey: {
+        ...ensureJourney(current).journey!,
+        phase: "launched",
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+    await this.startTikTokShare(campaignId);
+    return campaign;
+  },
+
+  async refreshJourneyPerformance(campaignId: string): Promise<Campaign> {
+    await randomDelay(800, 1200);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      const impressions = 12000 + Math.floor(Math.random() * 9000);
+      const clicks = Math.floor(impressions * (0.02 + Math.random() * 0.03));
+      const sales = Math.floor(clicks * (0.05 + Math.random() * 0.07));
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          phase: "complete",
+          metrics: {
+            impressions,
+            clicks,
+            sales,
+          },
+          evaluation:
+            "Performance is trending above baseline. Continue current strategy and iterate hook/caption variants weekly.",
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
   },
 };

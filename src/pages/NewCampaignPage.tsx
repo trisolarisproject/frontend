@@ -24,7 +24,7 @@ const NewCampaignPage = () => {
     try {
       setSaving(true);
       const campaign = await fakeApi.createCampaign({ name: name.trim() });
-      navigate(`/campaigns/${campaign.id}/step/1`);
+      navigate(`/campaigns/${campaign.id}/flow/asset-intake`);
     } catch {
       setError("Unable to create campaign.");
     } finally {

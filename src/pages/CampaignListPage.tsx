@@ -15,6 +15,13 @@ const statusToneMap: Record<Campaign["status"], "neutral" | "success" | "warning
   failed: "warning",
 };
 
+const flowPathByStep: Record<1 | 2 | 3 | 4, string> = {
+  1: "asset-intake",
+  2: "consult-intake",
+  3: "research",
+  4: "asset-posting",
+};
+
 const CampaignListPage = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +56,11 @@ const CampaignListPage = () => {
             <Card key={campaign.id}>
               <div className="row row-between row-wrap">
                 <div className="stack-sm">
-                  <Link to={`/campaigns/${campaign.id}/step/${campaign.currentStep}`}>
+                  <Link
+                    to={`/campaigns/${campaign.id}/flow/${
+                      flowPathByStep[campaign.journey?.flowStep ?? 1]
+                    }`}
+                  >
                     <strong>{campaign.name}</strong>
                   </Link>
                   <span className="muted">
@@ -58,7 +69,7 @@ const CampaignListPage = () => {
                 </div>
                 <div className="row">
                   <Badge tone={statusToneMap[campaign.status]}>{campaign.status}</Badge>
-                  <Badge>Step {campaign.currentStep}</Badge>
+                  <Badge>Step {campaign.journey?.flowStep ?? 1}</Badge>
                 </div>
               </div>
             </Card>

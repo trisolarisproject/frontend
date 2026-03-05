@@ -11,6 +11,17 @@ export type Goal = "sales" | "leads" | "app_installs" | "brand_awareness";
 export type Tone = "bold" | "friendly" | "luxury" | "playful" | "minimal";
 
 export type TikTokShareStatus = "not_started" | "sharing" | "shared" | "failed";
+export type JourneyPhase =
+  | "intake"
+  | "consult"
+  | "research"
+  | "strategy"
+  | "generation"
+  | "review"
+  | "launch_ready"
+  | "launched"
+  | "evaluating"
+  | "complete";
 
 export interface ConsultPayload {
   productDescription: string;
@@ -38,6 +49,39 @@ export interface Campaign {
   sharing: {
     tiktok: TikTokShareStatus;
     sharedAt?: string;
+  };
+  journey?: {
+    phase: JourneyPhase;
+    flowStep: 1 | 2 | 3 | 4;
+    feedbackLoops: number;
+    maxFeedbackLoops: number;
+    approved: boolean;
+    productLink?: string;
+    researchSummary: string[];
+    strategySummary: string[];
+    generatedAssets: {
+      videos: number;
+      graphics: number;
+      captions: number;
+    };
+    metrics?: {
+      impressions: number;
+      clicks: number;
+      sales: number;
+    };
+    evaluation?: string;
+    lastFeedbackNote?: string;
+    consultAnswers?: {
+      audienceDetails: string;
+      budgetRange: string;
+      timeline: string;
+      constraints: string;
+    };
+    activeTask?: "consult" | "research" | "posting" | null;
+    taskStartedAt?: string;
+    taskProgress?: number;
+    taskStatusMessage?: string;
+    updatedAt: string;
   };
 }
 
