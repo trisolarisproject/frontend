@@ -8,6 +8,7 @@ import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
+import PageLayout from "../components/PageLayout";
 
 const AssetIntakePage = () => {
   const { id } = useParams();
@@ -94,9 +95,7 @@ const AssetIntakePage = () => {
   }
 
   return (
-    <div className="stack">
-      <h1>Asset Intake</h1>
-      <p className="muted">Upload assets and provide product context.</p>
+    <PageLayout title="Asset Intake" subtitle="Upload assets and provide product context.">
       <Card>
         <form className="stack" onSubmit={onSubmit}>
           {error ? <Banner kind="error">{error}</Banner> : null}
@@ -126,7 +125,7 @@ const AssetIntakePage = () => {
           </div>
         </form>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

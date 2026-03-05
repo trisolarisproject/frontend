@@ -17,6 +17,7 @@ const primaryNavItems: NavItem[] = [
 const campaignNavItems: NavItem[] = [
   { to: "/campaigns", label: "Campaigns", end: true },
   { to: "/campaigns/new", label: "New Campaign" },
+  { to: "/campaign-assets", label: "Campaign Assets" },
 ];
 
 const utilityNavItems: NavItem[] = [

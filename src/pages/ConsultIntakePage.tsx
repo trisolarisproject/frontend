@@ -8,6 +8,7 @@ import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
+import PageLayout from "../components/PageLayout";
 
 const goalOptions: Goal[] = ["sales", "leads", "app_installs", "brand_awareness"];
 const toneOptions: Tone[] = ["bold", "friendly", "luxury", "playful", "minimal"];
@@ -113,9 +114,10 @@ const ConsultIntakePage = () => {
   }
 
   return (
-    <div className="stack">
-      <h1>Agentic Consult</h1>
-      <p className="muted">Provide initial inputs before chatting with the AI agent.</p>
+    <PageLayout
+      title="Agentic Consult"
+      subtitle="Provide initial inputs before chatting with the AI agent."
+    >
       <Card>
         <form className="stack" onSubmit={onSubmit}>
           {error ? <Banner kind="error">{error}</Banner> : null}
@@ -175,7 +177,7 @@ const ConsultIntakePage = () => {
           </div>
         </form>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

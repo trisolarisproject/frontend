@@ -7,6 +7,7 @@ import Banner from "../components/ui/Banner";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ProgressBar from "../components/ui/ProgressBar";
+import PageLayout from "../components/PageLayout";
 
 const formatRuntime = (startedAt: string, endedAt: string) => {
   const ms = Math.max(0, new Date(endedAt).getTime() - new Date(startedAt).getTime());
@@ -196,9 +197,10 @@ const ConsultStatusPage = () => {
   const isPostingOpen = openPanels.posting || (activePane === "posting" && postingProgress < 100);
 
   return (
-    <div className="stack">
-      <h1>Campaign Build Log</h1>
-      <p className="muted">All AI pipeline stages are tracked here in one place.</p>
+    <PageLayout
+      title="Campaign Build Log"
+      subtitle="All AI pipeline stages are tracked here in one place."
+    >
       {error ? <Banner kind="error">{error}</Banner> : null}
       <Card>
         <div className="build-log">
@@ -319,7 +321,7 @@ const ConsultStatusPage = () => {
               <section className="campaign-summary-tile">
                 <div className="campaign-summary-tile-head">
                   <h3>Assets</h3>
-                  <Link className="summary-link" to="/campaigns">
+                  <Link className="summary-link" to={`/campaigns/${campaign.id}/assets?campaignId=${campaign.id}`}>
                     Details
                   </Link>
                 </div>
@@ -373,7 +375,7 @@ const ConsultStatusPage = () => {
           </div>
         </Card>
       ) : null}
-    </div>
+    </PageLayout>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import Card from "../components/ui/Card";
+import PageLayout from "../components/PageLayout";
 
 const prettify = (path: string): string =>
   path
@@ -13,15 +14,14 @@ const SidebarPlaceholderPage = () => {
   const title = prettify(pathname);
 
   return (
-    <div className="stack">
-      <h1>{title}</h1>
+    <PageLayout title={title}>
       <Card>
         <p>{title} is a generic placeholder section.</p>
         <p className="muted">
           You can wire real charts, analytics, and tables here later.
         </p>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

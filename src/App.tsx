@@ -9,6 +9,7 @@ import AssetIntakePage from "./pages/AssetIntakePage";
 import ConsultIntakePage from "./pages/ConsultIntakePage";
 import ConsultChatPage from "./pages/ConsultChatPage";
 import ConsultStatusPage from "./pages/ConsultStatusPage";
+import CampaignAssetsPage from "./pages/CampaignAssetsPage";
 
 const App = () => {
   return (
@@ -17,6 +18,8 @@ const App = () => {
       <Route element={<AppShell />}>
         <Route path="/campaigns" element={<CampaignListPage />} />
         <Route path="/campaigns/new" element={<NewCampaignPage />} />
+        <Route path="/campaign-assets" element={<CampaignAssetsPage />} />
+        <Route path="/campaigns/:id/assets" element={<CampaignAssetsPage />} />
         <Route path="/campaigns/:id/flow/asset-intake" element={<AssetIntakePage />} />
         <Route path="/campaigns/:id/flow/consult-intake" element={<ConsultIntakePage />} />
         <Route path="/campaigns/:id/flow/consult-chat" element={<ConsultChatPage />} />

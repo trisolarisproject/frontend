@@ -5,6 +5,7 @@ import type { Campaign } from "../types";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import PageLayout from "../components/PageLayout";
 
 const statusToneMap: Record<Campaign["status"], "neutral" | "success" | "warning"> = {
   draft: "neutral",
@@ -34,12 +35,7 @@ const CampaignListPage = () => {
   }, []);
 
   return (
-    <div className="stack">
-      <div className="stack-sm">
-        <h1>Campaigns</h1>
-        <p className="muted">Manage your campaigns and resume any step in the flow.</p>
-      </div>
-
+    <PageLayout title="Campaigns" subtitle="Manage your campaigns and resume any step in the flow.">
       {loading ? (
         <div className="row">
           <LoadingSpinner />
@@ -76,7 +72,7 @@ const CampaignListPage = () => {
           ))}
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 };
 

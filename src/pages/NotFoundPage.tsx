@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
+import PageLayout from "../components/PageLayout";
 
 const NotFoundPage = () => {
   return (
-    <div className="stack">
-      <h1>Page not found</h1>
+    <PageLayout title="Page not found">
       <p>That page does not exist.</p>
       <Link to="/campaigns">Go back to campaigns</Link>
-    </div>
+    </PageLayout>
   );
 };
 

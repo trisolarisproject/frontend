@@ -5,6 +5,7 @@ import type { Campaign, Video } from "../types";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import PageLayout from "../components/PageLayout";
 
 const VideoDetailPage = () => {
   const { videoId } = useParams();
@@ -49,8 +50,7 @@ const VideoDetailPage = () => {
   }
 
   return (
-    <div className="stack">
-      <h1>{video.title}</h1>
+    <PageLayout title={video.title}>
       <Card>
         <div className="stack">
           <div className="player">
@@ -78,7 +78,7 @@ const VideoDetailPage = () => {
           )}
         </div>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

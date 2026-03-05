@@ -5,6 +5,7 @@ import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import Banner from "../components/ui/Banner";
+import PageLayout from "../components/PageLayout";
 
 const NewCampaignPage = () => {
   const navigate = useNavigate();
@@ -33,8 +34,7 @@ const NewCampaignPage = () => {
   };
 
   return (
-    <div className="stack">
-      <h1>New Campaign</h1>
+    <PageLayout title="New Campaign">
       <Card>
         <form className="stack" onSubmit={onSubmit}>
           {error ? <Banner kind="error">{error}</Banner> : null}
@@ -52,7 +52,7 @@ const NewCampaignPage = () => {
           </div>
         </form>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

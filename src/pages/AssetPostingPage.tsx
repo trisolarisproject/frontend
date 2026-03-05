@@ -8,6 +8,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ProgressBar from "../components/ui/ProgressBar";
+import PageLayout from "../components/PageLayout";
 
 const AssetPostingPage = () => {
   const { id } = useParams();
@@ -83,9 +84,10 @@ const AssetPostingPage = () => {
   const progress = campaign.journey?.activeTask === "posting" ? campaign.journey?.taskProgress ?? 0 : isComplete ? 100 : 0;
 
   return (
-    <div className="stack">
-      <h1>AI Asset Posting</h1>
-      <p className="muted">AI is posting generated assets to destination channels.</p>
+    <PageLayout
+      title="AI Asset Posting"
+      subtitle="AI is posting generated assets to destination channels."
+    >
       {error ? <Banner kind="error">{error}</Banner> : null}
       <Card>
         <p className="muted">{campaign.journey?.taskStatusMessage ?? "Starting asset posting..."}</p>
@@ -117,7 +119,7 @@ const AssetPostingPage = () => {
           </div>
         )}
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

@@ -7,6 +7,7 @@ import Banner from "../components/ui/Banner";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import PageLayout from "../components/PageLayout";
 
 type ChatMessage = {
   role: "ai" | "user";
@@ -186,9 +187,10 @@ const ConsultChatPage = () => {
   const analysisRunning = campaign.journey?.activeTask === "consult";
 
   return (
-    <div className="stack">
-      <h1>AI Consult Chat</h1>
-      <p className="muted">Respond to AI clarifying questions before analysis starts.</p>
+    <PageLayout
+      title="AI Consult Chat"
+      subtitle="Respond to AI clarifying questions before analysis starts."
+    >
       {error ? <Banner kind="error">{error}</Banner> : null}
 
       <Card>
@@ -229,7 +231,7 @@ const ConsultChatPage = () => {
           )}
         </form>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

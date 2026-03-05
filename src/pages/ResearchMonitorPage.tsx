@@ -7,6 +7,7 @@ import Banner from "../components/ui/Banner";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ProgressBar from "../components/ui/ProgressBar";
+import PageLayout from "../components/PageLayout";
 
 const ResearchMonitorPage = () => {
   const { id } = useParams();
@@ -82,9 +83,10 @@ const ResearchMonitorPage = () => {
   const progress = campaign.journey?.activeTask === "research" ? campaign.journey?.taskProgress ?? 0 : flowStep > 3 ? 100 : 0;
 
   return (
-    <div className="stack">
-      <h1>AI Research</h1>
-      <p className="muted">The AI researches trends, audience behavior, and context. You just watch.</p>
+    <PageLayout
+      title="AI Research"
+      subtitle="The AI researches trends, audience behavior, and context. You just watch."
+    >
       {error ? <Banner kind="error">{error}</Banner> : null}
       <Card>
         <p className="muted">{campaign.journey?.taskStatusMessage ?? "Starting AI research..."}</p>
@@ -101,7 +103,7 @@ const ResearchMonitorPage = () => {
           </ul>
         </Card>
       ) : null}
-    </div>
+    </PageLayout>
   );
 };
 
