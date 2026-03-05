@@ -27,6 +27,13 @@ body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: radial-gradient(circle at top right, #f9fbff, var(--bg));
   color: var(--text);
+  overflow: hidden;
+}
+
+html,
+body,
+#root {
+  height: 100%;
 }
 
 a {
@@ -39,9 +46,10 @@ a:hover {
 }
 
 .app-shell {
-  min-height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: clamp(220px, 18vw, 280px) 1fr;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -52,6 +60,8 @@ a:hover {
   flex-direction: column;
   gap: 18px;
   border-right: 1px solid #23335f;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .sidebar-top {
@@ -164,6 +174,8 @@ a:hover {
 
 .app-content {
   padding: clamp(16px, 2vw, 28px);
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .content-container {
@@ -465,14 +477,28 @@ select.input {
 
 .build-step-head {
   width: 100%;
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
   background: transparent;
-  padding: 14px 4px;
+  padding: 14px 10px;
   display: flex;
   align-items: center;
   gap: 10px;
   text-align: left;
   cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.build-step-head:hover {
+  background: #f7faff;
+  border-color: #dbe2f0;
+}
+
+.build-step-head:focus-visible {
+  outline: none;
+  background: #f7faff;
+  border-color: #c7d4ee;
+  box-shadow: 0 0 0 3px rgba(237, 145, 33, 0.2);
 }
 
 .build-step-title {
@@ -591,6 +617,18 @@ select.input {
   box-shadow: 0 6px 20px rgba(18, 36, 70, 0.06);
 }
 
+.campaign-summary-tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.campaign-summary-tile-head h3 {
+  margin: 0;
+}
+
 .campaign-summary-tile h3 {
   margin: 0 0 10px;
 }
@@ -654,6 +692,7 @@ select.input {
 
 @media (max-width: 760px) {
   .app-shell {
+    height: 100dvh;
     grid-template-columns: 1fr;
   }
 
@@ -666,6 +705,7 @@ select.input {
     transform: translateX(-100%);
     transition: transform 0.2s ease;
     border-right: 1px solid #23335f;
+    overflow-y: auto;
   }
 
   .sidebar.sidebar-open {

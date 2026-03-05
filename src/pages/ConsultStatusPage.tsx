@@ -174,9 +174,9 @@ const ConsultStatusPage = () => {
     ? formatRuntime(campaign.createdAt, campaign.journey?.updatedAt ?? new Date().toISOString())
     : null;
   const completedActions = [
-    "Captured and analyzed intake + consult responses",
-    "Researched audience and market context",
-    "Generated and posted campaign assets",
+    "Instagram",
+    "TikTok",
+    "X",
   ];
 
   let activePane: "consult" | "research" | "posting" = "consult";
@@ -191,6 +191,10 @@ const ConsultStatusPage = () => {
     setOpenPanels((prev) => ({ ...prev, [panel]: !prev[panel] }));
   };
 
+  const isConsultOpen = openPanels.consult || (activePane === "consult" && consultProgress < 100);
+  const isResearchOpen = openPanels.research || (activePane === "research" && researchProgress < 100);
+  const isPostingOpen = openPanels.posting || (activePane === "posting" && postingProgress < 100);
+
   return (
     <div className="stack">
       <h1>Campaign Build Log</h1>
@@ -204,7 +208,7 @@ const ConsultStatusPage = () => {
               <span className="build-step-title">Agentic consult</span>
               <span className="build-step-meta">{consultProgress}%</span>
             </button>
-            {openPanels.consult || (activePane === "consult" && consultProgress < 100) ? (
+            {isConsultOpen ? (
               <div className="build-step-body">
                 <p className="muted">
                   {activeTask === "consult"
@@ -224,7 +228,7 @@ const ConsultStatusPage = () => {
               <span className="build-step-title">AI research</span>
               <span className="build-step-meta">{researchProgress}%</span>
             </button>
-            {openPanels.research || (activePane === "research" && researchProgress < 100) ? (
+            {isResearchOpen ? (
               <div className="build-step-body">
                 <p className="muted">
                   {activeTask === "research"
@@ -251,7 +255,7 @@ const ConsultStatusPage = () => {
               <span className="build-step-title">Asset posting</span>
               <span className="build-step-meta">{postingProgress}%</span>
             </button>
-            {openPanels.posting || (activePane === "posting" && postingProgress < 100) ? (
+            {isPostingOpen ? (
               <div className="build-step-body">
                 <p className="muted">
                   {activeTask === "posting"
@@ -261,19 +265,8 @@ const ConsultStatusPage = () => {
                     : "Starts automatically after research."}
                 </p>
                 <ProgressBar value={postingProgress} />
-                {phase === "complete" && videos.length > 0 ? (
-                  <div className="stack-sm">
-                    <p className="muted">Generated videos</p>
-                    <div className="grid cards-grid">
-                      {videos.map((video) => (
-                        <Card key={video.id}>
-                          <h3>{video.title}</h3>
-                          <p>{video.caption}</p>
-                          <Link to={`/videos/${video.id}`}>Preview</Link>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
+                {phase === "complete" ? (
+                  <p className="muted">Generated {videos.length} short-form videos.</p>
                 ) : null}
               </div>
             ) : null}
@@ -291,9 +284,6 @@ const ConsultStatusPage = () => {
               </div>
               <div className="campaign-summary-actions">
                 <span className="badge badge-success">Monitoring</span>
-                <Link className="summary-link" to="/campaigns">
-                  View full details
-                </Link>
               </div>
             </div>
 
@@ -318,7 +308,7 @@ const ConsultStatusPage = () => {
 
             <div className="campaign-summary-grid">
               <section className="campaign-summary-tile">
-                <h3>What the Agent Did</h3>
+                <h3>Platforms</h3>
                 <ul className="list">
                   {completedActions.map((item) => (
                     <li key={item}>{item}</li>
@@ -327,7 +317,12 @@ const ConsultStatusPage = () => {
               </section>
 
               <section className="campaign-summary-tile">
-                <h3>View Assets</h3>
+                <div className="campaign-summary-tile-head">
+                  <h3>Assets</h3>
+                  <Link className="summary-link" to="/campaigns">
+                    Details
+                  </Link>
+                </div>
                 {videos.length > 0 ? (
                   <div className="stack-sm">
                     {videos.slice(0, 3).map((video) => (
@@ -343,7 +338,12 @@ const ConsultStatusPage = () => {
               </section>
 
               <section className="campaign-summary-tile">
-                <h3>Metrics</h3>
+                <div className="campaign-summary-tile-head">
+                  <h3>Metrics</h3>
+                  <Link className="summary-link" to="/campaigns">
+                    Details
+                  </Link>
+                </div>
                 <div className="metric-row">
                   <span className="muted">Impressions</span>
                   <strong>{campaign.journey?.metrics?.impressions ?? "Pending"}</strong>
