@@ -78,10 +78,12 @@ const AssetIntakePage = () => {
 
   if (loading) {
     return (
-      <div className="row">
-        <LoadingSpinner />
-        <span>Loading asset intake...</span>
-      </div>
+      <PageLayout title="Asset Intake" subtitle="Upload assets and provide product context.">
+        <div className="row">
+          <LoadingSpinner />
+          <span>Loading asset intake...</span>
+        </div>
+      </PageLayout>
     );
   }
 

@@ -158,10 +158,15 @@ const ConsultChatPage = () => {
 
   if (loading) {
     return (
-      <div className="row">
-        <LoadingSpinner />
-        <span>Loading AI consult chat...</span>
-      </div>
+      <PageLayout
+        title="AI Consult Chat"
+        subtitle="Respond to AI clarifying questions before analysis starts."
+      >
+        <div className="row">
+          <LoadingSpinner />
+          <span>Loading AI consult chat...</span>
+        </div>
+      </PageLayout>
     );
   }
 

@@ -54,10 +54,15 @@ const ResearchMonitorPage = () => {
 
   if (loading) {
     return (
-      <div className="row">
-        <LoadingSpinner />
-        <span>Loading research monitor...</span>
-      </div>
+      <PageLayout
+        title="AI Research"
+        subtitle="The AI researches trends, audience behavior, and context. You just watch."
+      >
+        <div className="row">
+          <LoadingSpinner />
+          <span>Loading research monitor...</span>
+        </div>
+      </PageLayout>
     );
   }
 

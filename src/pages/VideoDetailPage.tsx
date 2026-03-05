@@ -33,10 +33,12 @@ const VideoDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="row">
-        <LoadingSpinner />
-        <span>Loading video...</span>
-      </div>
+      <PageLayout title="Video">
+        <div className="row">
+          <LoadingSpinner />
+          <span>Loading video...</span>
+        </div>
+      </PageLayout>
     );
   }
 

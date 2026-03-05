@@ -87,10 +87,15 @@ const ConsultIntakePage = () => {
 
   if (loading) {
     return (
-      <div className="row">
-        <LoadingSpinner />
-        <span>Loading consult intake...</span>
-      </div>
+      <PageLayout
+        title="Agentic Consult"
+        subtitle="Provide initial inputs before chatting with the AI agent."
+      >
+        <div className="row">
+          <LoadingSpinner />
+          <span>Loading consult intake...</span>
+        </div>
+      </PageLayout>
     );
   }
 

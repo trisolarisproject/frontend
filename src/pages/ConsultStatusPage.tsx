@@ -133,10 +133,15 @@ const ConsultStatusPage = () => {
 
   if (loading) {
     return (
-      <div className="row">
-        <LoadingSpinner />
-        <span>Loading build log...</span>
-      </div>
+      <PageLayout
+        title="Campaign Build Log"
+        subtitle="All AI pipeline stages are tracked here in one place."
+      >
+        <div className="row">
+          <LoadingSpinner />
+          <span>Loading build log...</span>
+        </div>
+      </PageLayout>
     );
   }
 

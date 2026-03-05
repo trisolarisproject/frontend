@@ -54,10 +54,15 @@ const AssetPostingPage = () => {
 
   if (loading) {
     return (
-      <div className="row">
-        <LoadingSpinner />
-        <span>Loading asset posting...</span>
-      </div>
+      <PageLayout
+        title="AI Asset Posting"
+        subtitle="AI is posting generated assets to destination channels."
+      >
+        <div className="row">
+          <LoadingSpinner />
+          <span>Loading asset posting...</span>
+        </div>
+      </PageLayout>
     );
   }
 

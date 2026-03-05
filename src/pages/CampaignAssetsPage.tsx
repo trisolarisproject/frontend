@@ -145,15 +145,6 @@ const CampaignAssetsPage = () => {
     return filtered;
   }, [buckets, highlightedCampaignId, searchTerm, sortOrder, timeRange]);
 
-  if (loading) {
-    return (
-      <div className="row">
-        <LoadingSpinner />
-        <span>Loading campaign assets...</span>
-      </div>
-    );
-  }
-
   return (
     <PageLayout
       title="Campaign Assets"
@@ -161,107 +152,116 @@ const CampaignAssetsPage = () => {
     >
       {error ? <Card>{error}</Card> : null}
 
-      <Card>
-        <div className="row row-wrap">
-          <div className="field" style={{ flex: "1 1 280px", minWidth: "240px" }}>
-            <label className="field-label" htmlFor="campaign-assets-search">
-              Search
-            </label>
-            <input
-              id="campaign-assets-search"
-              className="input"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Campaign name, ID, or asset name"
-            />
-          </div>
-
-          <div className="field" style={{ flex: "0 1 220px", minWidth: "180px" }}>
-            <label className="field-label" htmlFor="campaign-assets-sort">
-              Sort
-            </label>
-            <select
-              id="campaign-assets-sort"
-              className="input"
-              value={sortOrder}
-              onChange={(event) => setSortOrder(event.target.value as SortOrder)}
-            >
-              <option value="recent">Most recent</option>
-              <option value="oldest">Oldest</option>
-            </select>
-          </div>
-
-          <div className="field" style={{ flex: "0 1 220px", minWidth: "180px" }}>
-            <label className="field-label" htmlFor="campaign-assets-range">
-              Time range
-            </label>
-            <select
-              id="campaign-assets-range"
-              className="input"
-              value={timeRange}
-              onChange={(event) => setTimeRange(event.target.value as TimeRange)}
-            >
-              <option value="all">All time</option>
-              <option value="3m">Last 3 months</option>
-              <option value="1m">Last month</option>
-              <option value="2w">Last 2 weeks</option>
-              <option value="1w">Last week</option>
-            </select>
-          </div>
+      {loading ? (
+        <div className="row">
+          <LoadingSpinner />
+          <span>Loading campaign assets...</span>
         </div>
-      </Card>
-
-      {visibleBuckets.length === 0 ? (
-        <Card>
-          <p>No results found.</p>
-          <p className="muted">Try a broader search or a wider time range.</p>
-        </Card>
       ) : (
-        <div className="stack">
-          {visibleBuckets.map(({ campaign, uploadedAssets, generatedAssets }) => (
-            <Card key={campaign.id}>
-              <div className="stack">
-                <div className="row row-between row-wrap">
-                  <div className="stack-sm">
-                    <strong>{campaign.name}</strong>
-                    <span className="muted">Campaign ID: {campaign.id}</span>
-                  </div>
-                  <Link to={`/campaigns/${campaign.id}/flow/consult-status`}>Open build page</Link>
-                </div>
-
-                <div className="stack-sm">
-                  <h3>Uploaded assets</h3>
-                  {uploadedAssets.length > 0 ? (
-                    <ul className="list">
-                      {uploadedAssets.map((asset) => (
-                        <li key={asset.id}>
-                          {asset.fileName} ({Math.round(asset.size / 1024)} KB)
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="muted">None</p>
-                  )}
-                </div>
-
-                <div className="stack-sm">
-                  <h3>Generated assets</h3>
-                  {generatedAssets.length > 0 ? (
-                    <ul className="list">
-                      {generatedAssets.map((video) => (
-                        <li key={video.id}>
-                          <Link to={`/videos/${video.id}`}>{video.title}</Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="muted">None</p>
-                  )}
-                </div>
+        <>
+          <Card>
+            <div className="row row-wrap">
+              <div className="field" style={{ flex: "1 1 280px", minWidth: "240px" }}>
+                <label className="field-label" htmlFor="campaign-assets-search">
+                  Search
+                </label>
+                <input
+                  id="campaign-assets-search"
+                  className="input"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Campaign name, ID, or asset name"
+                />
               </div>
+
+              <div className="field" style={{ flex: "0 1 220px", minWidth: "180px" }}>
+                <label className="field-label" htmlFor="campaign-assets-sort">
+                  Sort
+                </label>
+                <select
+                  id="campaign-assets-sort"
+                  className="input"
+                  value={sortOrder}
+                  onChange={(event) => setSortOrder(event.target.value as SortOrder)}
+                >
+                  <option value="recent">Most recent</option>
+                  <option value="oldest">Oldest</option>
+                </select>
+              </div>
+
+              <div className="field" style={{ flex: "0 1 220px", minWidth: "180px" }}>
+                <label className="field-label" htmlFor="campaign-assets-range">
+                  Time range
+                </label>
+                <select
+                  id="campaign-assets-range"
+                  className="input"
+                  value={timeRange}
+                  onChange={(event) => setTimeRange(event.target.value as TimeRange)}
+                >
+                  <option value="all">All time</option>
+                  <option value="3m">Last 3 months</option>
+                  <option value="1m">Last month</option>
+                  <option value="2w">Last 2 weeks</option>
+                  <option value="1w">Last week</option>
+                </select>
+              </div>
+            </div>
+          </Card>
+
+          {visibleBuckets.length === 0 ? (
+            <Card>
+              <p>No results found.</p>
+              <p className="muted">Try a broader search or a wider time range.</p>
             </Card>
-          ))}
-        </div>
+          ) : (
+            <div className="stack">
+              {visibleBuckets.map(({ campaign, uploadedAssets, generatedAssets }) => (
+                <Card key={campaign.id}>
+                  <div className="stack">
+                    <div className="row row-between row-wrap">
+                      <div className="stack-sm">
+                        <strong>{campaign.name}</strong>
+                        <span className="muted">Campaign ID: {campaign.id}</span>
+                      </div>
+                      <Link to={`/campaigns/${campaign.id}/flow/consult-status`}>Open build page</Link>
+                    </div>
+
+                    <div className="stack-sm">
+                      <h3>Uploaded assets</h3>
+                      {uploadedAssets.length > 0 ? (
+                        <ul className="list">
+                          {uploadedAssets.map((asset) => (
+                            <li key={asset.id}>
+                              {asset.fileName} ({Math.round(asset.size / 1024)} KB)
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="muted">None</p>
+                      )}
+                    </div>
+
+                    <div className="stack-sm">
+                      <h3>Generated assets</h3>
+                      {generatedAssets.length > 0 ? (
+                        <ul className="list">
+                          {generatedAssets.map((video) => (
+                            <li key={video.id}>
+                              <Link to={`/videos/${video.id}`}>{video.title}</Link>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="muted">None</p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </PageLayout>
   );
