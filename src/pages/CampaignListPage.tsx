@@ -28,11 +28,9 @@ const CampaignListPage = () => {
 
   return (
     <div className="stack">
-      <div className="row row-between">
+      <div className="stack-sm">
         <h1>Campaigns</h1>
-        <Link className="btn btn-primary" to="/campaigns/new">
-          New Campaign
-        </Link>
+        <p className="muted">Manage your campaigns and resume any step in the flow.</p>
       </div>
 
       {loading ? (
@@ -43,7 +41,7 @@ const CampaignListPage = () => {
       ) : campaigns.length === 0 ? (
         <Card>
           <p>No campaigns yet.</p>
-          <p>Create your first one to begin the 4-step flow.</p>
+          <p>Create your first one from the sidebar to begin the 4-step flow.</p>
         </Card>
       ) : (
         <div className="stack">

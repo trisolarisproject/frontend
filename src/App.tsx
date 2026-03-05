@@ -8,6 +8,7 @@ import Step3GeneratingPage from "./pages/Step3GeneratingPage";
 import Step4ResultsPage from "./pages/Step4ResultsPage";
 import VideoDetailPage from "./pages/VideoDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import SidebarPlaceholderPage from "./pages/SidebarPlaceholderPage";
 
 const App = () => {
   return (
@@ -16,6 +17,10 @@ const App = () => {
       <Route element={<AppShell />}>
         <Route path="/campaigns" element={<CampaignListPage />} />
         <Route path="/campaigns/new" element={<NewCampaignPage />} />
+        <Route path="/summary" element={<SidebarPlaceholderPage />} />
+        <Route path="/performance" element={<SidebarPlaceholderPage />} />
+        <Route path="/audiences" element={<SidebarPlaceholderPage />} />
+        <Route path="/creative-library" element={<SidebarPlaceholderPage />} />
         <Route path="/campaigns/:id/step/1" element={<Step1AssetsPage />} />
         <Route path="/campaigns/:id/step/2" element={<Step2ConsultPage />} />
         <Route path="/campaigns/:id/step/3" element={<Step3GeneratingPage />} />
