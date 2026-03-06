@@ -7,6 +7,7 @@ import Textarea from "../components/ui/Textarea";
 import Button from "../components/ui/Button";
 import Banner from "../components/ui/Banner";
 import PageLayout from "../components/PageLayout";
+import Stepper from "../components/Stepper";
 
 const NewCampaignPage = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const NewCampaignPage = () => {
   };
 
   return (
-    <PageLayout title="New Campaign">
+    <PageLayout title="New Campaign" topContent={<Stepper currentStep={1} />}>
       <Card>
         <form className="stack" onSubmit={onSubmit}>
           {error ? <Banner kind="error">{error}</Banner> : null}

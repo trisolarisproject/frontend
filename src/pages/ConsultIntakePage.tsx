@@ -9,6 +9,7 @@ import Input from "../components/ui/Input";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
 import PageLayout from "../components/PageLayout";
+import Stepper from "../components/Stepper";
 
 const goalOptions: Goal[] = ["sales", "leads", "app_installs", "brand_awareness"];
 const toneOptions: Tone[] = ["bold", "friendly", "luxury", "playful", "minimal"];
@@ -122,6 +123,7 @@ const ConsultIntakePage = () => {
     <PageLayout
       title="Agentic Consult"
       subtitle="Provide initial inputs before chatting with the AI agent."
+      topContent={<Stepper currentStep={3} />}
     >
       <Card>
         <form className="stack" onSubmit={onSubmit}>

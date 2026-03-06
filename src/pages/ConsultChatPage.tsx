@@ -8,6 +8,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import PageLayout from "../components/PageLayout";
+import Stepper from "../components/Stepper";
 
 type ChatMessage = {
   role: "ai" | "user";
@@ -195,6 +196,7 @@ const ConsultChatPage = () => {
     <PageLayout
       title="AI Consult Chat"
       subtitle="Respond to AI clarifying questions before analysis starts."
+      topContent={<Stepper currentStep={4} />}
     >
       {error ? <Banner kind="error">{error}</Banner> : null}
 

@@ -9,6 +9,7 @@ import Input from "../components/ui/Input";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
 import PageLayout from "../components/PageLayout";
+import Stepper from "../components/Stepper";
 
 const AssetIntakePage = () => {
   const { id } = useParams();
@@ -97,7 +98,11 @@ const AssetIntakePage = () => {
   }
 
   return (
-    <PageLayout title="Asset Intake" subtitle="Upload assets and provide product context.">
+    <PageLayout
+      title="Asset Intake"
+      subtitle="Upload assets and provide product context."
+      topContent={<Stepper currentStep={2} />}
+    >
       <Card>
         <form className="stack" onSubmit={onSubmit}>
           {error ? <Banner kind="error">{error}</Banner> : null}
