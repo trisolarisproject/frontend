@@ -31,6 +31,12 @@ export interface ConsultPayload {
   keyPoints: string[];
 }
 
+export interface ClarifyingQuestion {
+  id: string;
+  prompt: string;
+  placeholder?: string;
+}
+
 export interface Campaign {
   id: string;
   name: string;
@@ -78,6 +84,7 @@ export interface Campaign {
       timeline: string;
       constraints: string;
     };
+    clarifyingAnswers?: Record<string, string>;
     activeTask?: "consult" | "research" | "posting" | null;
     taskStartedAt?: string;
     taskProgress?: number;

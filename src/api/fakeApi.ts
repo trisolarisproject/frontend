@@ -1,4 +1,11 @@
-import type { AppDatabase, Asset, Campaign, ConsultPayload, Video } from "../types";
+import type {
+  AppDatabase,
+  Asset,
+  Campaign,
+  ClarifyingQuestion,
+  ConsultPayload,
+  Video,
+} from "../types";
 import { loadDatabase, saveDatabase, updateDatabase } from "../store/storage";
 import { generateId } from "../utils/id";
 
@@ -73,6 +80,29 @@ const createDummyVideos = (campaign: Campaign): Video[] => {
       hashtags: ["marketing", "campaign", "growth", `variant${n}`],
     };
   });
+};
+
+const createClarifyingQuestions = (campaign: Campaign): ClarifyingQuestion[] => {
+  const targetAudience = campaign.consult?.targetAudience || "your core audience";
+  const goal = campaign.consult?.goal.replace("_", " ") || "sales";
+
+  return [
+    {
+      id: "primary-cta",
+      prompt: `What is the single most important action you want ${targetAudience} to take after seeing this campaign?`,
+      placeholder: "Example: Click through to the product page and start a trial.",
+    },
+    {
+      id: "launch-priority",
+      prompt: `For week one, should we prioritize conversion efficiency or rapid reach to support your ${goal} goal?`,
+      placeholder: "Example: Start with rapid reach for data, then optimize for conversions.",
+    },
+    {
+      id: "creative-guardrails",
+      prompt: "Are there competitor styles, claims, or phrases we should explicitly avoid in creative?",
+      placeholder: "Example: Avoid discount-heavy language and competitor name references.",
+    },
+  ];
 };
 
 const defaultJourneyState = (): NonNullable<Campaign["journey"]> => ({
@@ -616,10 +646,49 @@ export const fakeApi = {
         activeTask: null,
         taskStartedAt: undefined,
         taskProgress: 0,
-        taskStatusMessage: "Consult inputs captured. Chat with the AI agent to finalize details.",
+        taskStatusMessage: "Consult inputs captured. Review clarifying questions to finalize details.",
         updatedAt: new Date().toISOString(),
       },
     }));
+  },
+
+  async getFlowClarifyingQuestions(campaignId: string): Promise<{
+    questions: ClarifyingQuestion[];
+    answers: Record<string, string>;
+  }> {
+    await randomDelay(220, 420);
+    const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
+    const campaign = db.campaigns.find((item) => item.id === campaignId);
+    if (!campaign) {
+      throw new Error("Campaign not found.");
+    }
+
+    const withJourney = ensureJourney(campaign);
+    return {
+      questions: createClarifyingQuestions(withJourney),
+      answers: withJourney.journey?.clarifyingAnswers ?? {},
+    };
+  },
+
+  async saveFlowClarifyingAnswer(
+    campaignId: string,
+    payload: { questionId: string; answer: string }
+  ): Promise<Campaign> {
+    await randomDelay(140, 260);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          clarifyingAnswers: {
+            ...(journey.clarifyingAnswers ?? {}),
+            [payload.questionId]: payload.answer.trim(),
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
   },
 
   async startFlowStep3Research(campaignId: string): Promise<Campaign> {

@@ -1,171 +1,168 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fakeApi } from "../api/fakeApi";
-import type { Campaign } from "../types";
-import { useInterval } from "../hooks/useInterval";
+import type { Campaign, ClarifyingQuestion } from "../types";
 import Banner from "../components/ui/Banner";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import Textarea from "../components/ui/Textarea";
 import PageLayout from "../components/PageLayout";
 import Stepper from "../components/Stepper";
-
-type ChatMessage = {
-  role: "ai" | "user";
-  text: string;
-};
-
-const dummyQuestions = [
-  "Just some clarifying details before we start: what is the one key action you want viewers to take after seeing this campaign?",
-  "Do you want us to prioritize conversion efficiency or rapid reach in the first week?",
-  "Are there any competitor styles or phrases we should explicitly avoid?",
-];
-
-const THINKING_DELAY_MS = 1200;
 
 const ConsultChatPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [starting, setStarting] = useState(false);
-  const [isAiThinking, setIsAiThinking] = useState(false);
-  const [isReadyToBegin, setIsReadyToBegin] = useState(false);
-  const pendingReplyRef = useRef<number | null>(null);
-
-  const clearPendingReply = () => {
-    if (pendingReplyRef.current !== null) {
-      window.clearTimeout(pendingReplyRef.current);
-      pendingReplyRef.current = null;
-    }
-  };
-
-  const queueAiReply = (text: string) => {
-    clearPendingReply();
-    setIsAiThinking(true);
-    pendingReplyRef.current = window.setTimeout(() => {
-      setMessages((prev) => [...prev, { role: "ai", text }]);
-      setIsAiThinking(false);
-      pendingReplyRef.current = null;
-    }, THINKING_DELAY_MS);
-  };
+  const [questions, setQuestions] = useState<ClarifyingQuestion[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [savedAnswers, setSavedAnswers] = useState<Record<string, string>>({});
+  const [editingByQuestionId, setEditingByQuestionId] = useState<Record<string, boolean>>({});
+  const [savingQuestionId, setSavingQuestionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) {
       return;
     }
-    fakeApi
-      .getCampaign(id)
-      .then((campaignData) => {
+    Promise.all([fakeApi.getCampaign(id), fakeApi.getFlowClarifyingQuestions(id)])
+      .then(([campaignData, clarifyingData]) => {
         setCampaign(campaignData);
-        setMessages([]);
-        setQuestionIndex(0);
-        setIsReadyToBegin(false);
-        queueAiReply(dummyQuestions[0]);
+        setQuestions(clarifyingData.questions);
+        setSavedAnswers(clarifyingData.answers);
+        setAnswers(() => {
+          const seeded: Record<string, string> = {};
+          clarifyingData.questions.forEach((question) => {
+            seeded[question.id] = clarifyingData.answers[question.id] ?? "";
+          });
+          return seeded;
+        });
+        setEditingByQuestionId(() => {
+          const seeded: Record<string, boolean> = {};
+          clarifyingData.questions.forEach((question) => {
+            seeded[question.id] = !(clarifyingData.answers[question.id] ?? "").trim();
+          });
+          return seeded;
+        });
       })
+      .catch(() => setError("Unable to load clarifying questions."))
       .finally(() => setLoading(false));
   }, [id]);
 
   useEffect(() => {
-    return () => {
-      clearPendingReply();
-    };
-  }, []);
+    if (!campaign) {
+      return;
+    }
+    if ((campaign.journey?.flowStep ?? 1) > 2 || campaign.journey?.activeTask === "consult") {
+      navigate(`/campaigns/${campaign.id}/flow/consult-status`, { replace: true });
+    }
+  }, [campaign, navigate]);
 
-  useInterval(() => {
+  const unansweredCount = useMemo(
+    () => questions.filter((question) => !(answers[question.id] ?? "").trim()).length,
+    [questions, answers]
+  );
+
+  const saveAnswer = async (questionId: string) => {
     if (!id) {
       return;
     }
-    void fakeApi.pollFlowStep(id).then((next) => {
-      if (!next) {
-        return;
-      }
-      setCampaign(next);
-      if ((next.journey?.flowStep ?? 1) > 2) {
-        navigate(`/campaigns/${id}/flow/consult-status`, { replace: true });
-      }
-    });
-  }, campaign?.journey?.activeTask === "consult" ? 700 : null);
-
-  const hasFinishedQuestions = useMemo(
-    () => questionIndex >= dummyQuestions.length - 1,
-    [questionIndex]
-  );
-
-  const onSend = (event: FormEvent) => {
-    event.preventDefault();
-    if (!input.trim() || isAiThinking || isReadyToBegin) {
+    const nextValue = (answers[questionId] ?? "").trim();
+    if (!nextValue) {
+      setError("Add an answer before saving.");
       return;
     }
-    const userText = input.trim();
-    setInput("");
-    setMessages((prev) => [...prev, { role: "user", text: userText }]);
 
-    if (!hasFinishedQuestions) {
-      const nextIndex = questionIndex + 1;
-      setQuestionIndex(nextIndex);
-      queueAiReply(dummyQuestions[nextIndex]);
-    } else {
-      clearPendingReply();
-      setIsAiThinking(true);
-      pendingReplyRef.current = window.setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "ai",
-            text: "Thanks, that gives me enough context. We can begin your marketing campaign now.",
-          },
-        ]);
-        setIsAiThinking(false);
-        setIsReadyToBegin(true);
-        pendingReplyRef.current = null;
-      }, THINKING_DELAY_MS);
+    setError(null);
+    setSavingQuestionId(questionId);
+    try {
+      const nextCampaign = await fakeApi.saveFlowClarifyingAnswer(id, {
+        questionId,
+        answer: nextValue,
+      });
+      setCampaign(nextCampaign);
+      setSavedAnswers((prev) => ({ ...prev, [questionId]: nextValue }));
+      setEditingByQuestionId((prev) => ({ ...prev, [questionId]: false }));
+    } catch {
+      setError("Unable to save this answer.");
+    } finally {
+      setSavingQuestionId(null);
     }
   };
 
-  const startAnalysis = async () => {
+  const submitAnswers = async () => {
     if (!id || !campaign) {
       return;
     }
-    const answers = campaign.journey?.consultAnswers;
-    if (!answers) {
+    const consultAnswers = campaign.journey?.consultAnswers;
+    if (!consultAnswers) {
       setError("Consult intake data is missing. Please go back.");
       return;
     }
+    if (unansweredCount > 0) {
+      setError("Please answer all clarifying questions before submitting.");
+      return;
+    }
+
     setError(null);
-    setStarting(true);
+    setSubmitting(true);
     try {
-      const next = await fakeApi.startFlowStep2Consult(id, {
-        audienceDetails: answers.audienceDetails,
-        budgetRange: answers.budgetRange,
-        timeline: answers.timeline,
-        constraints: answers.constraints,
+      let latestCampaign = campaign;
+      const latestSavedAnswers = { ...savedAnswers };
+
+      for (const question of questions) {
+        const nextValue = (answers[question.id] ?? "").trim();
+        if (latestSavedAnswers[question.id] === nextValue) {
+          continue;
+        }
+        latestCampaign = await fakeApi.saveFlowClarifyingAnswer(id, {
+          questionId: question.id,
+          answer: nextValue,
+        });
+        latestSavedAnswers[question.id] = nextValue;
+      }
+
+      setCampaign(latestCampaign);
+      setSavedAnswers(latestSavedAnswers);
+
+      const clarifyingSummary = questions
+        .map(
+          (question, index) =>
+            `${index + 1}. ${question.prompt}\nAnswer: ${(answers[question.id] ?? "").trim()}`
+        )
+        .join("\n\n");
+
+      await fakeApi.startFlowStep2Consult(id, {
+        audienceDetails: consultAnswers.audienceDetails,
+        budgetRange: consultAnswers.budgetRange,
+        timeline: consultAnswers.timeline,
+        constraints: [consultAnswers.constraints.trim(), `Clarifying answers:\n${clarifyingSummary}`]
+          .filter(Boolean)
+          .join("\n\n"),
         goal: campaign.consult?.goal ?? "sales",
         tone: campaign.consult?.tone ?? "friendly",
         keyPoints: campaign.consult?.keyPoints ?? [],
       });
-      setCampaign(next);
+
       navigate(`/campaigns/${id}/flow/consult-status`);
     } catch {
-      setError("Unable to start AI analysis.");
+      setError("Unable to submit clarifying answers.");
     } finally {
-      setStarting(false);
+      setSubmitting(false);
     }
   };
 
   if (loading) {
     return (
       <PageLayout
-        title="AI Consult Chat"
-        subtitle="Respond to AI clarifying questions before analysis starts."
+        title="AI Clarifying Questions"
+        subtitle="Review and answer your generated clarifying questions."
       >
         <div className="row">
           <LoadingSpinner />
-          <span>Loading AI consult chat...</span>
+          <span>Loading clarifying questions...</span>
         </div>
       </PageLayout>
     );
@@ -190,54 +187,93 @@ const ConsultChatPage = () => {
     );
   }
 
-  const analysisRunning = campaign.journey?.activeTask === "consult";
+  if ((campaign.journey?.flowStep ?? 1) > 2 || campaign.journey?.activeTask === "consult") {
+    return null;
+  }
 
   return (
     <PageLayout
-      title="AI Consult Chat"
-      subtitle="Respond to AI clarifying questions before analysis starts."
+      title="AI Clarifying Questions"
+      subtitle="Edit and save each answer, then submit all answers to start the build."
       topContent={<Stepper currentStep={4} />}
     >
       {error ? <Banner kind="error">{error}</Banner> : null}
 
-      <Card>
-        <div className="chat-thread">
-          {messages.map((message, index) => (
-            <div key={`${message.role}-${index}`} className={`chat-bubble chat-${message.role}`}>
-              {message.text}
-            </div>
-          ))}
-          {isAiThinking ? (
-            <div className="chat-bubble chat-ai chat-thinking" aria-label="AI is thinking">
-              <span className="thinking-dots" aria-hidden="true">
-                <span className="thinking-dot" />
-                <span className="thinking-dot" />
-                <span className="thinking-dot" />
-              </span>
-            </div>
-          ) : null}
-        </div>
-        <form className="row" onSubmit={onSend}>
-          {isReadyToBegin ? (
-            <Button type="button" onClick={startAnalysis} disabled={analysisRunning || starting || isAiThinking}>
-              {starting ? "Starting..." : "Begin marketing campaign"}
+      <div className="stack">
+        {questions.map((question, index) => {
+          const currentValue = answers[question.id] ?? "";
+          const isSaved = currentValue.trim() !== "" && currentValue.trim() === (savedAnswers[question.id] ?? "");
+          const isEditing = editingByQuestionId[question.id] ?? !isSaved;
+          const isSaving = savingQuestionId === question.id;
+
+          return (
+            <Card key={question.id}>
+              <div className="stack-sm">
+                <div className="row row-between">
+                  <strong>Question {index + 1}</strong>
+                  <span className={`badge ${isSaved ? "badge-success" : "badge-neutral"}`}>
+                    {isSaved ? "Saved" : "Unsaved"}
+                  </span>
+                </div>
+                <p className="qa-question">{question.prompt}</p>
+                <Textarea
+                  label="Your answer"
+                  value={currentValue}
+                  onChange={(event) =>
+                    setAnswers((prev) => ({
+                      ...prev,
+                      [question.id]: event.target.value,
+                    }))
+                  }
+                  placeholder={question.placeholder}
+                  rows={4}
+                  required
+                  disabled={!isEditing}
+                />
+                <div className="row">
+                  {isSaved && !isEditing ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() =>
+                        setEditingByQuestionId((prev) => ({
+                          ...prev,
+                          [question.id]: true,
+                        }))
+                      }
+                    >
+                      Edit
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        void saveAnswer(question.id);
+                      }}
+                      disabled={isSaving || !currentValue.trim()}
+                    >
+                      {isSaving ? "Saving..." : "Save answer"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+
+        <Card>
+          <div className="row row-between row-wrap">
+            <span className="muted">
+              {unansweredCount === 0
+                ? "All answers provided."
+                : `${unansweredCount} question${unansweredCount > 1 ? "s" : ""} still need answers.`}
+            </span>
+            <Button type="button" onClick={() => void submitAnswers()} disabled={submitting || unansweredCount > 0}>
+              {submitting ? "Submitting..." : "Submit my answers"}
             </Button>
-          ) : (
-            <>
-              <input
-                className="input"
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder="Type your response..."
-                disabled={analysisRunning || isAiThinking}
-              />
-              <Button type="submit" disabled={!input.trim() || analysisRunning || isAiThinking}>
-                Send
-              </Button>
-            </>
-          )}
-        </form>
-      </Card>
+          </div>
+        </Card>
+      </div>
     </PageLayout>
   );
 };

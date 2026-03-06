@@ -541,6 +541,12 @@ select.input {
   border: 1px solid #f1cc95;
 }
 
+.qa-question {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .build-log {
   display: flex;
   flex-direction: column;

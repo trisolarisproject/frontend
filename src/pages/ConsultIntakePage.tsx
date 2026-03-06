@@ -90,7 +90,7 @@ const ConsultIntakePage = () => {
     return (
       <PageLayout
         title="Agentic Consult"
-        subtitle="Provide initial inputs before chatting with the AI agent."
+        subtitle="Provide initial inputs before reviewing AI clarifying questions."
       >
         <div className="row">
           <LoadingSpinner />
@@ -122,7 +122,7 @@ const ConsultIntakePage = () => {
   return (
     <PageLayout
       title="Agentic Consult"
-      subtitle="Provide initial inputs before chatting with the AI agent."
+      subtitle="Provide initial inputs before reviewing AI clarifying questions."
       topContent={<Stepper currentStep={3} />}
     >
       <Card>
@@ -182,7 +182,7 @@ const ConsultIntakePage = () => {
           />
           <div className="row">
             <Button type="submit" disabled={saving}>
-              {saving ? "Preparing..." : "Begin AI Consult"}
+              {saving ? "Preparing..." : "Continue to Clarifying Questions"}
             </Button>
           </div>
         </form>
