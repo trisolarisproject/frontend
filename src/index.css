@@ -207,6 +207,13 @@ a:hover {
   padding: 16px clamp(16px, 2vw, 28px);
 }
 
+.page-header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .page-header-text h1 {
   margin: 0;
   color: #1b2c52;
@@ -217,14 +224,19 @@ a:hover {
   color: #526385;
 }
 
-.page-top-slot {
-  background: var(--bg);
+.page-header-side {
+  min-width: 0;
+  width: min(100%, 760px);
 }
 
-.page-top-slot-inner {
-  width: min(100%, 1440px);
-  margin: 0 auto;
-  padding: 8px clamp(16px, 2vw, 28px) 10px;
+.page-header-side .flow-step {
+  min-height: 42px;
+  font-size: 12px;
+  padding: 0 16px 0 30px;
+}
+
+.page-header-side .flow-step:first-child {
+  padding-left: 16px;
 }
 
 .page-body {
@@ -849,6 +861,15 @@ select.input {
 }
 
 @media (max-width: 760px) {
+  .page-header-main {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header-side {
+    width: 100%;
+  }
+
   .flow-stepper {
     border-radius: 18px;
     overflow-x: auto;

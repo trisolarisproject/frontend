@@ -13,17 +13,15 @@ const PageLayout = ({ title, subtitle, topContent, children, bodyClassName = "st
     <div className="page-layout">
       <header className="page-header-bar">
         <div className="page-header-inner">
-          <div className="page-header-text">
-            <h1>{title}</h1>
-            {subtitle ? <p className="muted">{subtitle}</p> : null}
+          <div className="page-header-main">
+            <div className="page-header-text">
+              <h1>{title}</h1>
+              {subtitle ? <p className="muted">{subtitle}</p> : null}
+            </div>
+            {topContent ? <div className="page-header-side">{topContent}</div> : null}
           </div>
         </div>
       </header>
-      {topContent ? (
-        <div className="page-top-slot">
-          <div className="page-top-slot-inner">{topContent}</div>
-        </div>
-      ) : null}
       <div className="page-body">
         <div className={bodyClassName ? `page-body-inner ${bodyClassName}` : "page-body-inner"}>
           {children}
