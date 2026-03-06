@@ -159,8 +159,8 @@ const CampaignAssetsPage = () => {
         </div>
       ) : (
         <>
-          <Card>
-            <div className="row row-wrap">
+          <div className="campaign-assets-filters">
+            <div className="campaign-assets-filters-inner row row-wrap">
               <div className="field" style={{ flex: "1 1 280px", minWidth: "240px" }}>
                 <label className="field-label" htmlFor="campaign-assets-search">
                   Search
@@ -207,7 +207,7 @@ const CampaignAssetsPage = () => {
                 </select>
               </div>
             </div>
-          </Card>
+          </div>
 
           {visibleBuckets.length === 0 ? (
             <Card>

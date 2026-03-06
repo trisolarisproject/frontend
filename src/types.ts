@@ -34,6 +34,7 @@ export interface ConsultPayload {
 export interface Campaign {
   id: string;
   name: string;
+  description?: string;
   createdAt: string;
   status: CampaignStatus;
   currentStep: 1 | 2 | 3 | 4;

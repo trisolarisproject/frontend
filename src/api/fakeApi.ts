@@ -310,11 +310,18 @@ export const fakeApi = {
     return campaign ? ensureJourney(campaign) : null;
   },
 
-  async createCampaign({ name }: { name: string }): Promise<Campaign> {
+  async createCampaign({
+    name,
+    description,
+  }: {
+    name: string;
+    description?: string;
+  }): Promise<Campaign> {
     await randomDelay();
     const campaign: Campaign = {
       id: generateId(),
       name,
+      description: description?.trim() || undefined,
       createdAt: new Date().toISOString(),
       status: "collecting_assets",
       currentStep: 1,

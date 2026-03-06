@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fakeApi } from "../api/fakeApi";
 import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
+import Textarea from "../components/ui/Textarea";
 import Button from "../components/ui/Button";
 import Banner from "../components/ui/Banner";
 import PageLayout from "../components/PageLayout";
@@ -10,6 +11,7 @@ import PageLayout from "../components/PageLayout";
 const NewCampaignPage = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -24,7 +26,10 @@ const NewCampaignPage = () => {
 
     try {
       setSaving(true);
-      const campaign = await fakeApi.createCampaign({ name: name.trim() });
+      const campaign = await fakeApi.createCampaign({
+        name: name.trim(),
+        description: description.trim() || undefined,
+      });
       navigate(`/campaigns/${campaign.id}/flow/asset-intake`);
     } catch {
       setError("Unable to create campaign.");
@@ -44,6 +49,14 @@ const NewCampaignPage = () => {
             placeholder="Spring Product Launch"
             value={name}
             onChange={(event) => setName(event.target.value)}
+          />
+          <Textarea
+            label="Description (optional)"
+            name="campaignDescription"
+            placeholder="Add context for this campaign..."
+            rows={4}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
           />
           <div className="row">
             <Button type="submit" disabled={saving}>
