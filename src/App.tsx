@@ -20,7 +20,7 @@ const App = () => {
         <Route path="/campaigns/new" element={<NewCampaignPage />} />
         <Route path="/campaign-assets" element={<CampaignAssetsPage />} />
         <Route path="/campaigns/:id/assets" element={<CampaignAssetsPage />} />
-        <Route path="/campaigns/:id/flow/asset-intake" element={<AssetIntakePage />} />
+        <Route path="/campaigns/:id/flow/upload-assets" element={<AssetIntakePage />} />
         <Route path="/campaigns/:id/flow/consult-intake" element={<ConsultIntakePage />} />
         <Route path="/campaigns/:id/flow/consult-chat" element={<ConsultChatPage />} />
         <Route path="/campaigns/:id/flow/consult-status" element={<ConsultStatusPage />} />

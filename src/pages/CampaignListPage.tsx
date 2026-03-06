@@ -17,7 +17,7 @@ const statusToneMap: Record<Campaign["status"], "neutral" | "success" | "warning
 };
 
 const flowPathByStep: Record<1 | 2 | 3 | 4, string> = {
-  1: "asset-intake",
+  1: "upload-assets",
   2: "consult-intake",
   3: "research",
   4: "asset-posting",

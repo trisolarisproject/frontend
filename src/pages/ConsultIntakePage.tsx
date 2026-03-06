@@ -113,8 +113,8 @@ const ConsultIntakePage = () => {
   if (flowStep < 2) {
     return (
       <Card>
-        <p>Complete Asset Intake first.</p>
-        <Link to={`/campaigns/${campaign.id}/flow/asset-intake`}>Go to asset intake</Link>
+        <p>Complete Upload Assets first.</p>
+        <Link to={`/campaigns/${campaign.id}/flow/upload-assets`}>Go to upload assets</Link>
       </Card>
     );
   }

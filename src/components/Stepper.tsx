@@ -4,9 +4,9 @@ interface StepperProps {
 
 const labels = [
   "New Campaign",
-  "Asset Intake",
-  "Agentic Consult",
-  "AI Consult Chat",
+  "Upload Assets",
+  "Campaign Details",
+  "AI Consult",
 ] as const;
 
 const Stepper = ({ currentStep }: StepperProps) => {

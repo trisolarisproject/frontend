@@ -79,10 +79,10 @@ const AssetIntakePage = () => {
 
   if (loading) {
     return (
-      <PageLayout title="Asset Intake" subtitle="Upload assets and provide product context.">
+      <PageLayout title="Upload Assets" subtitle="Upload assets and provide product context.">
         <div className="row">
           <LoadingSpinner />
-          <span>Loading asset intake...</span>
+          <span>Loading upload assets...</span>
         </div>
       </PageLayout>
     );
@@ -99,7 +99,7 @@ const AssetIntakePage = () => {
 
   return (
     <PageLayout
-      title="Asset Intake"
+      title="Upload Assets"
       subtitle="Upload assets and provide product context."
       topContent={<Stepper currentStep={2} />}
     >

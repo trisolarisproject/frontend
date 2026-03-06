@@ -31,7 +31,7 @@ const NewCampaignPage = () => {
         name: name.trim(),
         description: description.trim() || undefined,
       });
-      navigate(`/campaigns/${campaign.id}/flow/asset-intake`);
+      navigate(`/campaigns/${campaign.id}/flow/upload-assets`);
     } catch {
       setError("Unable to create campaign.");
     } finally {
