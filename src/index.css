@@ -230,13 +230,13 @@ a:hover {
 }
 
 .page-header-side .flow-step {
-  min-height: 42px;
+  min-height: 38px;
   font-size: 12px;
-  padding: 0 16px 0 30px;
+  padding: 0 10px;
 }
 
 .page-header-side .flow-step:first-child {
-  padding-left: 16px;
+  padding-left: 10px;
 }
 
 .page-body {
@@ -382,47 +382,70 @@ select.input {
 .flow-stepper {
   display: flex;
   margin-bottom: 0;
-  border: 2px solid var(--border);
-  border-radius: 999px;
+  border: 1px solid #dbe3f1;
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
   overflow: hidden;
-  background: var(--surface);
+  background: #f7f9fe;
 }
 
 .flow-step {
   position: relative;
   flex: 1;
   min-width: 0;
-  min-height: 56px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 20px 0 34px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted);
-  background: var(--surface);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748f;
+  background: transparent;
+  border-radius: 8px;
   white-space: nowrap;
 }
 
 .flow-step:not(:first-child) {
-  margin-left: -18px;
-  clip-path: polygon(18px 0, 100% 0, calc(100% - 18px) 50%, 100% 100%, 18px 100%, 0 50%);
+  margin-left: 0;
+  clip-path: none;
 }
 
 .flow-step:first-child {
-  clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 50%, 100% 100%, 0 100%);
-  padding-left: 20px;
+  clip-path: none;
+  padding-left: 12px;
 }
 
 .flow-step:last-child {
-  clip-path: polygon(18px 0, 100% 0, 100% 100%, 18px 100%, 0 50%);
+  clip-path: none;
+}
+
+.flow-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: #dfe6f3;
 }
 
 .flow-step-active,
 .flow-step-done {
-  color: var(--primary-contrast);
-  background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+  color: #3f4f72;
+  background: #ffffff;
+}
+
+.flow-step-active {
+  color: #223255;
+  box-shadow: 0 1px 0 rgba(18, 36, 70, 0.06), 0 0 0 1px #d8e0f0 inset;
+}
+
+.flow-step-done {
+  color: #8a5b11;
+  background: #fff4e6;
 }
 
 .progress-wrap {
@@ -871,14 +894,14 @@ select.input {
   }
 
   .flow-stepper {
-    border-radius: 18px;
+    border-radius: 10px;
     overflow-x: auto;
     scrollbar-width: thin;
   }
 
   .flow-step {
-    min-width: 170px;
-    min-height: 50px;
+    min-width: 150px;
+    min-height: 40px;
     font-size: 12px;
   }
 
