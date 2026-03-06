@@ -23,6 +23,22 @@ const flowPathByStep: Record<1 | 2 | 3 | 4, string> = {
   4: "asset-posting",
 };
 
+const getResumeFlowPath = (campaign: Campaign): string => {
+  const journey = campaign.journey;
+  const flowStep = journey?.flowStep ?? 1;
+
+  if (flowStep === 2) {
+    if (journey?.activeTask === "consult") {
+      return "consult-status";
+    }
+    if (journey?.consultAnswers) {
+      return "consult-chat";
+    }
+  }
+
+  return flowPathByStep[flowStep];
+};
+
 const CampaignListPage = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,9 +69,7 @@ const CampaignListPage = () => {
               <div className="row row-between row-wrap">
                 <div className="stack-sm">
                   <Link
-                    to={`/campaigns/${campaign.id}/flow/${
-                      flowPathByStep[campaign.journey?.flowStep ?? 1]
-                    }`}
+                    to={`/campaigns/${campaign.id}/flow/${getResumeFlowPath(campaign)}`}
                   >
                     <strong>{campaign.name}</strong>
                   </Link>

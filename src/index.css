@@ -317,6 +317,10 @@ a:hover {
   color: var(--muted);
 }
 
+.required-mark {
+  color: #c62828;
+}
+
 .input,
 .textarea,
 select.input {

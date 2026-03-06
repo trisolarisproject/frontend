@@ -10,7 +10,10 @@ const Input = ({ label, error, id, ...props }: InputProps) => {
 
   return (
     <label className="field" htmlFor={fieldId}>
-      <span className="field-label">{label}</span>
+      <span className="field-label">
+        {label}
+        {props.required ? <span className="required-mark"> *</span> : null}
+      </span>
       <input id={fieldId} className="input" {...props} />
       {error ? <span className="field-error">{error}</span> : null}
     </label>

@@ -132,18 +132,21 @@ const ConsultIntakePage = () => {
             label="Who is the primary audience?"
             value={audienceDetails}
             onChange={(event) => setAudienceDetails(event.target.value)}
+            required
           />
           <Input
             label="Budget range"
             value={budgetRange}
             onChange={(event) => setBudgetRange(event.target.value)}
             placeholder="$2k-$5k"
+            required
           />
           <Input
             label="Campaign timeline"
             value={timeline}
             onChange={(event) => setTimeline(event.target.value)}
             placeholder="2 weeks"
+            required
           />
           <Textarea
             label="Brand constraints / must-avoid"

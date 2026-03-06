@@ -111,6 +111,7 @@ const AssetIntakePage = () => {
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             rows={4}
+            required
           />
           <Input
             label="Product link"
@@ -119,7 +120,9 @@ const AssetIntakePage = () => {
             placeholder="https://example.com/product"
           />
           <label className="field">
-            <span className="field-label">Upload assets</span>
+            <span className="field-label">
+              Upload assets<span className="required-mark"> *</span>
+            </span>
             <input type="file" multiple onChange={onFileChange} />
           </label>
           <p className="muted">

@@ -10,7 +10,10 @@ const Textarea = ({ label, error, id, ...props }: TextareaProps) => {
 
   return (
     <label className="field" htmlFor={fieldId}>
-      <span className="field-label">{label}</span>
+      <span className="field-label">
+        {label}
+        {props.required ? <span className="required-mark"> *</span> : null}
+      </span>
       <textarea id={fieldId} className="textarea" {...props} />
       {error ? <span className="field-error">{error}</span> : null}
     </label>

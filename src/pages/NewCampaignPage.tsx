@@ -50,6 +50,7 @@ const NewCampaignPage = () => {
             placeholder="Spring Product Launch"
             value={name}
             onChange={(event) => setName(event.target.value)}
+            required
           />
           <Textarea
             label="Description (optional)"
