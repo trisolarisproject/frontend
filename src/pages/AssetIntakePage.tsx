@@ -8,6 +8,7 @@ import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
+import FlowFooter from "../components/FlowFooter";
 
 const AssetIntakePage = () => {
   const { id } = useParams();
@@ -94,38 +95,40 @@ const AssetIntakePage = () => {
   }
 
   return (
-    <Card>
-      <form className="stack" onSubmit={onSubmit}>
-        {error ? <Banner kind="error">{error}</Banner> : null}
-        <Textarea
-          label="Product description"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          rows={4}
-          required
-        />
-        <Input
-          label="Product link"
-          value={productLink}
-          onChange={(event) => setProductLink(event.target.value)}
-          placeholder="https://example.com/product"
-        />
-        <label className="field">
-          <span className="field-label">
-            Upload assets<span className="required-mark"> *</span>
-          </span>
-          <input type="file" multiple onChange={onFileChange} />
-        </label>
-        <p className="muted">
-          Existing assets: {assets.length} | New selected: {selectedFiles.length}
-        </p>
-        <div className="row">
-          <Button type="submit" disabled={saving}>
-            {saving ? "Saving..." : "Continue"}
-          </Button>
-        </div>
-      </form>
-    </Card>
+    <>
+      <Card>
+        <form id="asset-intake-form" className="stack" onSubmit={onSubmit}>
+          {error ? <Banner kind="error">{error}</Banner> : null}
+          <Textarea
+            label="Product description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={4}
+            required
+          />
+          <Input
+            label="Product link"
+            value={productLink}
+            onChange={(event) => setProductLink(event.target.value)}
+            placeholder="https://example.com/product"
+          />
+          <label className="field">
+            <span className="field-label">
+              Upload assets<span className="required-mark"> *</span>
+            </span>
+            <input type="file" multiple onChange={onFileChange} />
+          </label>
+          <p className="muted">
+            Existing assets: {assets.length} | New selected: {selectedFiles.length}
+          </p>
+        </form>
+      </Card>
+      <FlowFooter>
+        <Button type="submit" form="asset-intake-form" disabled={saving}>
+          {saving ? "Saving..." : "Continue"}
+        </Button>
+      </FlowFooter>
+    </>
   );
 };
 

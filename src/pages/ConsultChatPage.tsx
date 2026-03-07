@@ -7,6 +7,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
+import FlowFooter from "../components/FlowFooter";
 
 const ConsultChatPage = () => {
   const { id } = useParams();
@@ -250,19 +251,19 @@ const ConsultChatPage = () => {
           );
         })}
 
-        <Card>
-          <div className="row row-between row-wrap">
-            <span className="muted">
-              {unansweredCount === 0
-                ? "All answers provided."
-                : `${unansweredCount} question${unansweredCount > 1 ? "s" : ""} still need answers.`}
-            </span>
-            <Button type="button" onClick={() => void submitAnswers()} disabled={submitting || unansweredCount > 0}>
-              {submitting ? "Submitting..." : "Submit my answers"}
-            </Button>
-          </div>
-        </Card>
       </div>
+      <FlowFooter>
+        <div className="row row-between row-wrap">
+          <span className="muted">
+            {unansweredCount === 0
+              ? "All answers provided."
+              : `${unansweredCount} question${unansweredCount > 1 ? "s" : ""} still need answers.`}
+          </span>
+          <Button type="button" onClick={() => void submitAnswers()} disabled={submitting || unansweredCount > 0}>
+            {submitting ? "Submitting..." : "Submit my answers"}
+          </Button>
+        </div>
+      </FlowFooter>
     </>
   );
 };

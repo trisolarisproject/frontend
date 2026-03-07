@@ -59,7 +59,7 @@ const FlowLayout = () => {
         </div>
       </header>
       <div className="page-body">
-        <div className="page-body-inner stack">
+        <div className="page-body-inner stack flow-page-body">
           <Outlet />
         </div>
       </div>

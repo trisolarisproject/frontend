@@ -1,27 +1,23 @@
-import type { PropsWithChildren } from "react";
+import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 
 type Variant = "primary" | "secondary" | "ghost";
 
-interface ButtonProps extends PropsWithChildren {
-  type?: "button" | "submit";
+interface ButtonProps extends PropsWithChildren, ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
-  disabled?: boolean;
-  onClick?: () => void;
 }
 
 const Button = ({
   children,
   type = "button",
   variant = "primary",
-  disabled,
-  onClick,
+  className,
+  ...props
 }: ButtonProps) => {
   return (
     <button
       type={type}
-      disabled={disabled}
-      onClick={onClick}
-      className={`btn btn-${variant}`}
+      className={`btn btn-${variant}${className ? ` ${className}` : ""}`}
+      {...props}
     >
       {children}
     </button>
