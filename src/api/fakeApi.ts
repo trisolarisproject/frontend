@@ -105,6 +105,12 @@ const createClarifyingQuestions = (campaign: Campaign): ClarifyingQuestion[] => 
   ];
 };
 
+const defaultApprovalsState = (): NonNullable<Campaign["journey"]>["approvals"] => ({
+  strategy: false,
+  deliveryMethod: false,
+  storyboard: false,
+});
+
 const defaultJourneyState = (): NonNullable<Campaign["journey"]> => ({
   phase: "intake",
   flowStep: 1,
@@ -121,13 +127,30 @@ const defaultJourneyState = (): NonNullable<Campaign["journey"]> => ({
   activeTask: null,
   taskProgress: 0,
   taskStatusMessage: "Waiting for input.",
+  approvals: defaultApprovalsState(),
   updatedAt: new Date().toISOString(),
 });
 
-const ensureJourney = (campaign: Campaign): Campaign => ({
-  ...campaign,
-  journey: campaign.journey ?? defaultJourneyState(),
-});
+const ensureJourney = (campaign: Campaign): Campaign => {
+  const journey = campaign.journey;
+  if (!journey) {
+    return {
+      ...campaign,
+      journey: defaultJourneyState(),
+    };
+  }
+
+  return {
+    ...campaign,
+    journey: {
+      ...journey,
+      approvals: {
+        ...defaultApprovalsState(),
+        ...journey.approvals,
+      },
+    },
+  };
+};
 
 const updateCampaignInDb = (
   campaignId: string,
@@ -912,6 +935,29 @@ export const fakeApi = {
           },
           evaluation:
             "Performance is trending above baseline. Continue current strategy and iterate hook/caption variants weekly.",
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  },
+
+  async updateJourneyApproval(
+    campaignId: string,
+    approvalType: "strategy" | "deliveryMethod" | "storyboard",
+    approved: boolean
+  ): Promise<Campaign> {
+    await randomDelay(140, 260);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          approvals: {
+            ...journey.approvals,
+            [approvalType]: approved,
+            updatedAt: new Date().toISOString(),
+          },
           updatedAt: new Date().toISOString(),
         },
       };

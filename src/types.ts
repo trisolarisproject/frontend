@@ -89,6 +89,12 @@ export interface Campaign {
     taskStartedAt?: string;
     taskProgress?: number;
     taskStatusMessage?: string;
+    approvals: {
+      strategy: boolean;
+      deliveryMethod: boolean;
+      storyboard: boolean;
+      updatedAt?: string;
+    };
     updatedAt: string;
   };
 }

@@ -11,6 +11,8 @@ import ConsultChatPage from "./pages/ConsultChatPage";
 import ConsultStatusPage from "./pages/ConsultStatusPage";
 import CampaignAssetsPage from "./pages/CampaignAssetsPage";
 import FlowLayout from "./components/FlowLayout";
+import ApprovalsPage from "./pages/ApprovalsPage";
+import CampaignApprovalsPage from "./pages/CampaignApprovalsPage";
 
 const App = () => {
   return (
@@ -20,6 +22,8 @@ const App = () => {
         <Route path="/campaigns" element={<CampaignListPage />} />
         <Route path="/campaigns/new" element={<NewCampaignPage />} />
         <Route path="/campaign-assets" element={<CampaignAssetsPage />} />
+        <Route path="/approvals" element={<ApprovalsPage />} />
+        <Route path="/campaigns/:id/approvals" element={<CampaignApprovalsPage />} />
         <Route path="/campaigns/:id/assets" element={<CampaignAssetsPage />} />
         <Route path="/campaigns/:id/flow" element={<FlowLayout />}>
           <Route path="upload-assets" element={<AssetIntakePage />} />

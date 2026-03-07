@@ -821,6 +821,102 @@ select.input {
   gap: 6px;
 }
 
+.approvals-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.approvals-actions {
+  margin-top: 12px;
+}
+
+.approvals-pane {
+  border: 1px solid #bfd6dc;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f8fbfd 0%, #f1f7fb 100%);
+}
+
+.approvals-pane-summary {
+  cursor: pointer;
+  list-style: none;
+  border: 1px solid transparent;
+  border-radius: 0;
+  padding: 10px 12px;
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  background: linear-gradient(180deg, #f6f8fa 0%, #eef2f5 100%);
+}
+
+.approvals-pane-summary:hover {
+  background: linear-gradient(180deg, #f9fbfc 0%, #f1f5f8 100%);
+}
+
+.approvals-pane-summary:focus-visible {
+  outline: none;
+  background: linear-gradient(180deg, #f9fbfc 0%, #f1f5f8 100%);
+  border-color: #a7c8d1;
+  box-shadow: 0 0 0 3px rgba(237, 145, 33, 0.2);
+}
+
+.approvals-pane[open] .approvals-pane-summary {
+  border-bottom: 1px solid #b7d2db;
+}
+
+.approvals-pane-summary::-webkit-details-marker {
+  display: none;
+}
+
+.approvals-pane-summary::marker {
+  content: "";
+}
+
+.approvals-pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.approvals-pane-title-strip {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #d8dbe0;
+  background: linear-gradient(90deg, #d7d8dc 0%, #e2e4e8 100%);
+  border-radius: 6px;
+  padding: 12px 14px;
+  color: #394559;
+}
+
+.approvals-pane-right {
+  gap: 10px;
+}
+
+.approvals-pane-caret {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 11px solid #4f6d73;
+  transition: transform 180ms ease;
+}
+
+.approvals-pane[open] .approvals-pane-caret {
+  transform: rotate(180deg);
+}
+
+.approvals-pane-body {
+  padding: 14px 16px 16px;
+  background:
+    radial-gradient(circle at 60% 0%, rgba(255, 255, 255, 0.9), rgba(239, 246, 251, 0.7) 60%, rgba(232, 243, 249, 0.85) 100%),
+    linear-gradient(180deg, #edf5f9 0%, #e6f0f5 100%);
+}
+
+.approvals-pane-body p {
+  margin: 0;
+}
+
 .campaign-summary-grid {
   display: grid;
   gap: 12px;
