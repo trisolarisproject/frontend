@@ -26,7 +26,7 @@ const getFlowHeaderConfig = (pathname: string): FlowHeaderConfig => {
 
   if (pathname.endsWith("/consult-chat")) {
     return {
-      title: "AI Clarifying Questions",
+      title: "AI Consult",
       subtitle: "Edit and save each answer, then submit all answers to start the build.",
       step: 4,
     };

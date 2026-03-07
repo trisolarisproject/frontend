@@ -454,11 +454,12 @@ select.input {
   padding: 0 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #64748f;
+  color: #6f7d97;
   background: transparent;
   border-radius: 8px;
   white-space: nowrap;
   overflow: hidden;
+  transition: color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
 }
 
 .flow-step::before {
@@ -519,12 +520,18 @@ select.input {
 }
 
 .flow-step-active {
-  color: #223255;
-  box-shadow: 0 1px 0 rgba(18, 36, 70, 0.06), 0 0 0 1px #d8e0f0 inset;
+  color: #1e2d4f;
+  font-weight: 700;
+  box-shadow: 0 1px 0 rgba(18, 36, 70, 0.06), 0 0 0 2px #cfdbf2 inset;
 }
 
 .flow-step-done {
   color: #8a5b11;
+}
+
+.flow-step-todo {
+  color: #95a1b5;
+  opacity: 0.85;
 }
 
 .flow-step-active::before {
@@ -533,6 +540,10 @@ select.input {
 
 .flow-step-done::before {
   background: #fff4e6;
+}
+
+.flow-step-todo::before {
+  background: #eff3f9;
 }
 
 .progress-wrap {
