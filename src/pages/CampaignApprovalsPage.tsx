@@ -49,6 +49,7 @@ const CampaignApprovalsPage = () => {
     deliveryMethod: false,
     storyboard: false,
   });
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -93,22 +94,16 @@ const CampaignApprovalsPage = () => {
     }
   };
 
-  const onDecline = async (key: ApprovalKey) => {
-    if (!id) {
-      return;
-    }
-
-    setSavingKey(key);
-    try {
-      const updated = await fakeApi.declineJourneyApproval(id, key);
-      setCampaign(updated);
-      setOpenFeedback((prev) => ({
-        ...prev,
-        [key]: true,
-      }));
-    } finally {
-      setSavingKey(null);
-    }
+  const onDecline = (key: ApprovalKey) => {
+    const savedValue = campaign?.journey?.approvalFeedback?.[key] ?? "";
+    setFeedbackDrafts((prev) => ({
+      ...prev,
+      [key]: savedValue,
+    }));
+    setOpenFeedback((prev) => ({
+      ...prev,
+      [key]: true,
+    }));
   };
 
   const onToggleAll = () => {
@@ -184,6 +179,34 @@ const CampaignApprovalsPage = () => {
       ...prev,
       [key]: savedValue,
     }));
+    setOpenFeedback((prev) => ({
+      ...prev,
+      [key]: false,
+    }));
+  };
+
+  const onEditFeedback = (key: ApprovalKey) => {
+    const savedValue = campaign?.journey?.approvalFeedback?.[key] ?? "";
+    setFeedbackDrafts((prev) => ({
+      ...prev,
+      [key]: savedValue,
+    }));
+    setOpenFeedback((prev) => ({
+      ...prev,
+      [key]: true,
+    }));
+  };
+
+  const onSubmit = () => {
+    setIsSubmitDialogOpen(true);
+  };
+
+  const onCancelSubmit = () => {
+    setIsSubmitDialogOpen(false);
+  };
+
+  const onConfirmSubmit = () => {
+    setIsSubmitDialogOpen(false);
   };
 
   if (loading) {
@@ -233,6 +256,7 @@ const CampaignApprovalsPage = () => {
             const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
             const isSaving = savingKey === item.key;
             const isSavingFeedback = savingFeedbackKey === item.key;
+            const isDeclineInProgress = openFeedback[item.key];
             const savedFeedback = campaign.journey?.approvalFeedback?.[item.key];
             const savedFeedbackNormalized = (savedFeedback ?? "").trim();
             const draftFeedbackNormalized = feedbackDrafts[item.key].trim();
@@ -291,7 +315,7 @@ const CampaignApprovalsPage = () => {
                         <Button
                           variant="primary"
                           onClick={() => onSetApproval(item.key, true)}
-                          disabled={isSaving}
+                          disabled={isSaving || isDeclineInProgress}
                         >
                           {isSaving ? "Saving..." : `Approve ${item.title}`}
                         </Button>
@@ -306,7 +330,7 @@ const CampaignApprovalsPage = () => {
                       </>
                     )}
                   </div>
-                  {openFeedback[item.key] || isDeclined ? (
+                  {openFeedback[item.key] ? (
                     <div className="stack-sm approvals-feedback-panel">
                       <label className="field-label" htmlFor={`approval-feedback-${item.key}`}>
                         Please provide feedback for the AI to improve on
@@ -327,14 +351,24 @@ const CampaignApprovalsPage = () => {
                             isSavingFeedback || !draftFeedbackNormalized || !isFeedbackChanged
                           }
                         >
-                          {isSavingFeedback ? "Saving..." : "Save feedback"}
+                          {isSavingFeedback ? "Saving..." : "Confirm Decline"}
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={() => onCancelFeedbackChanges(item.key)}
-                          disabled={!isFeedbackChanged}
                         >
-                          Cancel changes
+                          {isDeclined ? "Done" : "Cancel"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : isDeclined ? (
+                    <div className="stack-sm approvals-feedback-panel">
+                      {savedFeedbackNormalized ? (
+                        <p className="muted">{savedFeedbackNormalized}</p>
+                      ) : null}
+                      <div className="row">
+                        <Button variant="ghost" onClick={() => onEditFeedback(item.key)}>
+                          Edit
                         </Button>
                       </div>
                     </div>
@@ -344,11 +378,39 @@ const CampaignApprovalsPage = () => {
             );
           })}
       </div>
+      {isSubmitDialogOpen ? (
+        <div className="modal-overlay" role="presentation">
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="submit-approvals-title"
+          >
+            <h3 id="submit-approvals-title">Submit Campaign Approvals?</h3>
+            <p className="muted">
+              Once submitted, you can no longer edit your responses.
+            </p>
+            <div className="row modal-actions">
+              <Button type="button" variant="ghost" onClick={onCancelSubmit}>
+                Cancel
+              </Button>
+              <Button type="button" variant="primary" onClick={onConfirmSubmit}>
+                Submit
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <FlowFooter>
         <div className="flow-footer-actions">
           <Button type="button" variant="secondary" onClick={() => navigate("/approvals")}>
             Back
           </Button>
+          <div className="flow-footer-primary">
+            <Button type="button" variant="primary" onClick={onSubmit}>
+              Submit
+            </Button>
+          </div>
         </div>
       </FlowFooter>
     </PageLayout>
