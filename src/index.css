@@ -406,6 +406,35 @@ select.input {
   background: transparent;
   border-radius: 8px;
   white-space: nowrap;
+  overflow: hidden;
+}
+
+.flow-step::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: transparent;
+  transform: scaleX(0);
+  transition: transform 280ms ease, background-color 180ms ease;
+  z-index: 0;
+}
+
+.flow-step-label {
+  position: relative;
+  z-index: 1;
+}
+
+.flow-stepper-forward .flow-step::before {
+  transform-origin: left center;
+}
+
+.flow-stepper-backward .flow-step::before {
+  transform-origin: right center;
+}
+
+.flow-step-filled::before {
+  transform: scaleX(1);
 }
 
 .flow-step:not(:first-child) {
@@ -435,7 +464,6 @@ select.input {
 .flow-step-active,
 .flow-step-done {
   color: #3f4f72;
-  background: #ffffff;
 }
 
 .flow-step-active {
@@ -445,6 +473,13 @@ select.input {
 
 .flow-step-done {
   color: #8a5b11;
+}
+
+.flow-step-active::before {
+  background: #ffffff;
+}
+
+.flow-step-done::before {
   background: #fff4e6;
 }
 
