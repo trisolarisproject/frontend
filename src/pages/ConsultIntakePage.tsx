@@ -8,8 +8,6 @@ import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
-import PageLayout from "../components/PageLayout";
-import Stepper from "../components/Stepper";
 
 const goalOptions: Goal[] = ["sales", "leads", "app_installs", "brand_awareness"];
 const toneOptions: Tone[] = ["bold", "friendly", "luxury", "playful", "minimal"];
@@ -88,15 +86,10 @@ const ConsultIntakePage = () => {
 
   if (loading) {
     return (
-      <PageLayout
-        title="Agentic Consult"
-        subtitle="Provide initial inputs before reviewing AI clarifying questions."
-      >
-        <div className="row">
-          <LoadingSpinner />
-          <span>Loading consult intake...</span>
-        </div>
-      </PageLayout>
+      <div className="row">
+        <LoadingSpinner />
+        <span>Loading consult intake...</span>
+      </div>
     );
   }
 
@@ -120,74 +113,68 @@ const ConsultIntakePage = () => {
   }
 
   return (
-    <PageLayout
-      title="Agentic Consult"
-      subtitle="Provide initial inputs before reviewing AI clarifying questions."
-      topContent={<Stepper currentStep={3} />}
-    >
-      <Card>
-        <form className="stack" onSubmit={onSubmit}>
-          {error ? <Banner kind="error">{error}</Banner> : null}
-          <Input
-            label="Who is the primary audience?"
-            value={audienceDetails}
-            onChange={(event) => setAudienceDetails(event.target.value)}
-            required
-          />
-          <Input
-            label="Budget range"
-            value={budgetRange}
-            onChange={(event) => setBudgetRange(event.target.value)}
-            placeholder="$2k-$5k"
-            required
-          />
-          <Input
-            label="Campaign timeline"
-            value={timeline}
-            onChange={(event) => setTimeline(event.target.value)}
-            placeholder="2 weeks"
-            required
-          />
-          <Textarea
-            label="Brand constraints / must-avoid"
-            value={constraints}
-            onChange={(event) => setConstraints(event.target.value)}
-            rows={3}
-          />
-          <label className="field">
-            <span className="field-label">Primary goal</span>
-            <select className="input" value={goal} onChange={(event) => setGoal(event.target.value as Goal)}>
-              {goalOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option.replace("_", " ")}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span className="field-label">Tone</span>
-            <select className="input" value={tone} onChange={(event) => setTone(event.target.value as Tone)}>
-              {toneOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Textarea
-            label="Key product points (one per line)"
-            value={keyPointsText}
-            onChange={(event) => setKeyPointsText(event.target.value)}
-            rows={4}
-          />
-          <div className="row">
-            <Button type="submit" disabled={saving}>
-              {saving ? "Preparing..." : "Continue to Clarifying Questions"}
-            </Button>
-          </div>
-        </form>
-      </Card>
-    </PageLayout>
+    <Card>
+      <form className="stack" onSubmit={onSubmit}>
+        {error ? <Banner kind="error">{error}</Banner> : null}
+        <Input
+          label="Who is the primary audience?"
+          value={audienceDetails}
+          onChange={(event) => setAudienceDetails(event.target.value)}
+          required
+        />
+        <Input
+          label="Budget range"
+          value={budgetRange}
+          onChange={(event) => setBudgetRange(event.target.value)}
+          placeholder="$2k-$5k"
+          required
+        />
+        <Input
+          label="Campaign timeline"
+          value={timeline}
+          onChange={(event) => setTimeline(event.target.value)}
+          placeholder="2 weeks"
+          required
+        />
+        <Textarea
+          label="Brand constraints / must-avoid"
+          value={constraints}
+          onChange={(event) => setConstraints(event.target.value)}
+          rows={3}
+        />
+        <label className="field">
+          <span className="field-label">Primary goal</span>
+          <select className="input" value={goal} onChange={(event) => setGoal(event.target.value as Goal)}>
+            {goalOptions.map((option) => (
+              <option key={option} value={option}>
+                {option.replace("_", " ")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span className="field-label">Tone</span>
+          <select className="input" value={tone} onChange={(event) => setTone(event.target.value as Tone)}>
+            {toneOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Textarea
+          label="Key product points (one per line)"
+          value={keyPointsText}
+          onChange={(event) => setKeyPointsText(event.target.value)}
+          rows={4}
+        />
+        <div className="row">
+          <Button type="submit" disabled={saving}>
+            {saving ? "Preparing..." : "Continue to Clarifying Questions"}
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 };
 

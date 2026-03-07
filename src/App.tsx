@@ -10,6 +10,7 @@ import ConsultIntakePage from "./pages/ConsultIntakePage";
 import ConsultChatPage from "./pages/ConsultChatPage";
 import ConsultStatusPage from "./pages/ConsultStatusPage";
 import CampaignAssetsPage from "./pages/CampaignAssetsPage";
+import FlowLayout from "./components/FlowLayout";
 
 const App = () => {
   return (
@@ -20,12 +21,14 @@ const App = () => {
         <Route path="/campaigns/new" element={<NewCampaignPage />} />
         <Route path="/campaign-assets" element={<CampaignAssetsPage />} />
         <Route path="/campaigns/:id/assets" element={<CampaignAssetsPage />} />
-        <Route path="/campaigns/:id/flow/upload-assets" element={<AssetIntakePage />} />
-        <Route path="/campaigns/:id/flow/consult-intake" element={<ConsultIntakePage />} />
-        <Route path="/campaigns/:id/flow/consult-chat" element={<ConsultChatPage />} />
-        <Route path="/campaigns/:id/flow/consult-status" element={<ConsultStatusPage />} />
-        <Route path="/campaigns/:id/flow/research" element={<ConsultStatusPage />} />
-        <Route path="/campaigns/:id/flow/asset-posting" element={<ConsultStatusPage />} />
+        <Route path="/campaigns/:id/flow" element={<FlowLayout />}>
+          <Route path="upload-assets" element={<AssetIntakePage />} />
+          <Route path="consult-intake" element={<ConsultIntakePage />} />
+          <Route path="consult-chat" element={<ConsultChatPage />} />
+          <Route path="consult-status" element={<ConsultStatusPage />} />
+          <Route path="research" element={<ConsultStatusPage />} />
+          <Route path="asset-posting" element={<ConsultStatusPage />} />
+        </Route>
         <Route path="/summary" element={<SidebarPlaceholderPage />} />
         <Route path="/performance" element={<SidebarPlaceholderPage />} />
         <Route path="/audiences" element={<SidebarPlaceholderPage />} />

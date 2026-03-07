@@ -8,8 +8,6 @@ import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
-import PageLayout from "../components/PageLayout";
-import Stepper from "../components/Stepper";
 
 const AssetIntakePage = () => {
   const { id } = useParams();
@@ -79,12 +77,10 @@ const AssetIntakePage = () => {
 
   if (loading) {
     return (
-      <PageLayout title="Upload Assets" subtitle="Upload assets and provide product context.">
-        <div className="row">
-          <LoadingSpinner />
-          <span>Loading upload assets...</span>
-        </div>
-      </PageLayout>
+      <div className="row">
+        <LoadingSpinner />
+        <span>Loading upload assets...</span>
+      </div>
     );
   }
 
@@ -98,44 +94,38 @@ const AssetIntakePage = () => {
   }
 
   return (
-    <PageLayout
-      title="Upload Assets"
-      subtitle="Upload assets and provide product context."
-      topContent={<Stepper currentStep={2} />}
-    >
-      <Card>
-        <form className="stack" onSubmit={onSubmit}>
-          {error ? <Banner kind="error">{error}</Banner> : null}
-          <Textarea
-            label="Product description"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            rows={4}
-            required
-          />
-          <Input
-            label="Product link"
-            value={productLink}
-            onChange={(event) => setProductLink(event.target.value)}
-            placeholder="https://example.com/product"
-          />
-          <label className="field">
-            <span className="field-label">
-              Upload assets<span className="required-mark"> *</span>
-            </span>
-            <input type="file" multiple onChange={onFileChange} />
-          </label>
-          <p className="muted">
-            Existing assets: {assets.length} | New selected: {selectedFiles.length}
-          </p>
-          <div className="row">
-            <Button type="submit" disabled={saving}>
-              {saving ? "Saving..." : "Continue"}
-            </Button>
-          </div>
-        </form>
-      </Card>
-    </PageLayout>
+    <Card>
+      <form className="stack" onSubmit={onSubmit}>
+        {error ? <Banner kind="error">{error}</Banner> : null}
+        <Textarea
+          label="Product description"
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          rows={4}
+          required
+        />
+        <Input
+          label="Product link"
+          value={productLink}
+          onChange={(event) => setProductLink(event.target.value)}
+          placeholder="https://example.com/product"
+        />
+        <label className="field">
+          <span className="field-label">
+            Upload assets<span className="required-mark"> *</span>
+          </span>
+          <input type="file" multiple onChange={onFileChange} />
+        </label>
+        <p className="muted">
+          Existing assets: {assets.length} | New selected: {selectedFiles.length}
+        </p>
+        <div className="row">
+          <Button type="submit" disabled={saving}>
+            {saving ? "Saving..." : "Continue"}
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 };
 

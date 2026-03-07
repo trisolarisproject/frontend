@@ -7,7 +7,6 @@ import Banner from "../components/ui/Banner";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ProgressBar from "../components/ui/ProgressBar";
-import PageLayout from "../components/PageLayout";
 
 const formatRuntime = (startedAt: string, endedAt: string) => {
   const ms = Math.max(0, new Date(endedAt).getTime() - new Date(startedAt).getTime());
@@ -133,15 +132,10 @@ const ConsultStatusPage = () => {
 
   if (loading) {
     return (
-      <PageLayout
-        title="Campaign Build Log"
-        subtitle="All AI pipeline stages are tracked here in one place."
-      >
-        <div className="row">
-          <LoadingSpinner />
-          <span>Loading build log...</span>
-        </div>
-      </PageLayout>
+      <div className="row">
+        <LoadingSpinner />
+        <span>Loading build log...</span>
+      </div>
     );
   }
 
@@ -202,10 +196,7 @@ const ConsultStatusPage = () => {
   const isPostingOpen = openPanels.posting || (activePane === "posting" && postingProgress < 100);
 
   return (
-    <PageLayout
-      title="Campaign Build Log"
-      subtitle="All AI pipeline stages are tracked here in one place."
-    >
+    <>
       {error ? <Banner kind="error">{error}</Banner> : null}
       <Card>
         <div className="build-log">
@@ -380,7 +371,7 @@ const ConsultStatusPage = () => {
           </div>
         </Card>
       ) : null}
-    </PageLayout>
+    </>
   );
 };
 

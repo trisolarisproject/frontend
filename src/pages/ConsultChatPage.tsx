@@ -7,8 +7,6 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Textarea from "../components/ui/Textarea";
-import PageLayout from "../components/PageLayout";
-import Stepper from "../components/Stepper";
 
 const ConsultChatPage = () => {
   const { id } = useParams();
@@ -156,15 +154,10 @@ const ConsultChatPage = () => {
 
   if (loading) {
     return (
-      <PageLayout
-        title="AI Clarifying Questions"
-        subtitle="Review and answer your generated clarifying questions."
-      >
-        <div className="row">
-          <LoadingSpinner />
-          <span>Loading clarifying questions...</span>
-        </div>
-      </PageLayout>
+      <div className="row">
+        <LoadingSpinner />
+        <span>Loading clarifying questions...</span>
+      </div>
     );
   }
 
@@ -192,11 +185,7 @@ const ConsultChatPage = () => {
   }
 
   return (
-    <PageLayout
-      title="AI Clarifying Questions"
-      subtitle="Edit and save each answer, then submit all answers to start the build."
-      topContent={<Stepper currentStep={4} />}
-    >
+    <>
       {error ? <Banner kind="error">{error}</Banner> : null}
 
       <div className="stack">
@@ -274,7 +263,7 @@ const ConsultChatPage = () => {
           </div>
         </Card>
       </div>
-    </PageLayout>
+    </>
   );
 };
 
