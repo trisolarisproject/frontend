@@ -33,6 +33,11 @@ const CampaignApprovalsPage = () => {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<ApprovalKey | null>(null);
+  const [expandedItems, setExpandedItems] = useState<Record<ApprovalKey, boolean>>({
+    strategy: false,
+    deliveryMethod: false,
+    storyboard: false,
+  });
 
   useEffect(() => {
     if (!id) {
@@ -52,6 +57,10 @@ const CampaignApprovalsPage = () => {
     }
     return approvalItems.filter((item) => !campaign.journey?.approvals[item.key]).length;
   }, [campaign]);
+  const isAllExpanded = useMemo(
+    () => approvalItems.every((item) => expandedItems[item.key]),
+    [expandedItems]
+  );
 
   const onSetApproval = async (key: ApprovalKey, approved: boolean) => {
     if (!id) {
@@ -65,6 +74,21 @@ const CampaignApprovalsPage = () => {
     } finally {
       setSavingKey(null);
     }
+  };
+
+  const onToggleAll = () => {
+    setExpandedItems({
+      strategy: !isAllExpanded,
+      deliveryMethod: !isAllExpanded,
+      storyboard: !isAllExpanded,
+    });
+  };
+
+  const onTogglePane = (key: ApprovalKey, open: boolean) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [key]: open,
+    }));
   };
 
   if (loading) {
@@ -100,49 +124,54 @@ const CampaignApprovalsPage = () => {
             <strong>{campaign.name}</strong>
             <span className="muted">Campaign ID: {campaign.id}</span>
           </div>
-          <Link to="/approvals">Back to approvals</Link>
+          <Button variant="ghost" onClick={onToggleAll}>
+            {isAllExpanded ? "Collapse all" : "Expand all"}
+          </Button>
         </div>
       </Card>
 
-      <div className="stack">
+      <div className="approvals-list">
         {approvalItems.map((item) => {
           const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
           const isSaving = savingKey === item.key;
 
           return (
-            <Card key={item.key}>
-              <details className="approvals-pane">
-                <summary className="approvals-pane-summary">
-                  <div className="approvals-pane-head">
-                    <div className="approvals-pane-title-strip">
-                      <strong>{item.title}</strong>
-                    </div>
-                    <div className="row approvals-pane-right">
-                      <Badge tone={isApproved ? "success" : "warning"}>
-                        {isApproved ? "Approved" : "Pending"}
-                      </Badge>
-                      <span className="approvals-pane-caret" aria-hidden="true" />
-                    </div>
-                  </div>
-                </summary>
-                <div className="approvals-pane-body">
-                  <p className="muted">{item.description}</p>
-                  <div className="approvals-actions">
-                    <Button
-                      variant={isApproved ? "secondary" : "primary"}
-                      onClick={() => onSetApproval(item.key, !isApproved)}
-                      disabled={isSaving}
-                    >
-                      {isSaving
-                        ? "Saving..."
-                        : isApproved
-                          ? "Mark Pending"
-                          : `Approve ${item.title}`}
-                    </Button>
+            <details
+              key={item.key}
+              className="approvals-pane"
+              open={expandedItems[item.key]}
+              onToggle={(event) =>
+                onTogglePane(item.key, (event.currentTarget as HTMLDetailsElement).open)
+              }
+            >
+              <summary className="approvals-pane-summary">
+                <div className="approvals-pane-head">
+                  <strong>{item.title}</strong>
+                  <div className="row approvals-pane-meta">
+                    <Badge tone={isApproved ? "success" : "warning"}>
+                      {isApproved ? "Approved" : "Pending"}
+                    </Badge>
+                    <span className="approvals-pane-caret" aria-hidden="true" />
                   </div>
                 </div>
-              </details>
-            </Card>
+              </summary>
+              <div className="approvals-pane-body">
+                <p className="muted">{item.description}</p>
+                <div className="approvals-actions">
+                  <Button
+                    variant={isApproved ? "secondary" : "primary"}
+                    onClick={() => onSetApproval(item.key, !isApproved)}
+                    disabled={isSaving}
+                  >
+                    {isSaving
+                      ? "Saving..."
+                      : isApproved
+                        ? "Mark Pending"
+                        : `Approve ${item.title}`}
+                  </Button>
+                </div>
+              </div>
+            </details>
           );
         })}
       </div>

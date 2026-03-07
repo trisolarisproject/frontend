@@ -832,36 +832,41 @@ select.input {
   margin-top: 12px;
 }
 
-.approvals-pane {
-  border: 1px solid #bfd6dc;
-  border-radius: 12px;
+.approvals-list {
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 14px;
   overflow: hidden;
-  background: linear-gradient(180deg, #f8fbfd 0%, #f1f7fb 100%);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.approvals-pane {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .approvals-pane-summary {
   cursor: pointer;
   list-style: none;
-  border: 1px solid transparent;
-  border-radius: 0;
-  padding: 10px 12px;
-  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
-  background: linear-gradient(180deg, #f6f8fa 0%, #eef2f5 100%);
+  padding: 14px 14px;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+  background: var(--surface);
 }
 
 .approvals-pane-summary:hover {
-  background: linear-gradient(180deg, #f9fbfc 0%, #f1f5f8 100%);
+  background: var(--surface-soft);
+  box-shadow: inset 0 0 0 1px #dbe3f1;
 }
 
 .approvals-pane-summary:focus-visible {
   outline: none;
-  background: linear-gradient(180deg, #f9fbfc 0%, #f1f5f8 100%);
-  border-color: #a7c8d1;
+  background: var(--surface-soft);
   box-shadow: 0 0 0 3px rgba(237, 145, 33, 0.2);
 }
 
 .approvals-pane[open] .approvals-pane-summary {
-  border-bottom: 1px solid #b7d2db;
+  border-bottom: 1px solid var(--border);
 }
 
 .approvals-pane-summary::-webkit-details-marker {
@@ -876,21 +881,11 @@ select.input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
-.approvals-pane-title-strip {
-  min-width: 0;
-  flex: 1;
-  border: 1px solid #d8dbe0;
-  background: linear-gradient(90deg, #d7d8dc 0%, #e2e4e8 100%);
-  border-radius: 6px;
-  padding: 12px 14px;
-  color: #394559;
-}
-
-.approvals-pane-right {
-  gap: 10px;
+.approvals-pane-meta {
+  gap: 8px;
 }
 
 .approvals-pane-caret {
@@ -907,10 +902,8 @@ select.input {
 }
 
 .approvals-pane-body {
-  padding: 14px 16px 16px;
-  background:
-    radial-gradient(circle at 60% 0%, rgba(255, 255, 255, 0.9), rgba(239, 246, 251, 0.7) 60%, rgba(232, 243, 249, 0.85) 100%),
-    linear-gradient(180deg, #edf5f9 0%, #e6f0f5 100%);
+  padding: 14px;
+  background: var(--surface-soft);
 }
 
 .approvals-pane-body p {

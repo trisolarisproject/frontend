@@ -5,6 +5,7 @@ interface FlowHeaderConfig {
   title: string;
   subtitle: string;
   step: 1 | 2 | 3 | 4;
+  completedSteps: 1 | 2 | 3 | 4;
 }
 
 const getFlowHeaderConfig = (pathname: string): FlowHeaderConfig => {
@@ -13,6 +14,7 @@ const getFlowHeaderConfig = (pathname: string): FlowHeaderConfig => {
       title: "Upload Assets",
       subtitle: "Upload assets and provide product context.",
       step: 2,
+      completedSteps: 2,
     };
   }
 
@@ -21,6 +23,7 @@ const getFlowHeaderConfig = (pathname: string): FlowHeaderConfig => {
       title: "Campaign Details",
       subtitle: "Provide initial inputs before reviewing AI clarifying questions.",
       step: 3,
+      completedSteps: 3,
     };
   }
 
@@ -29,6 +32,7 @@ const getFlowHeaderConfig = (pathname: string): FlowHeaderConfig => {
       title: "AI Consult",
       subtitle: "Edit and save each answer, then submit all answers to start the build.",
       step: 4,
+      completedSteps: 3,
     };
   }
 
@@ -36,6 +40,7 @@ const getFlowHeaderConfig = (pathname: string): FlowHeaderConfig => {
     title: "Campaign Build Log",
     subtitle: "All AI pipeline stages are tracked here in one place.",
     step: 4,
+    completedSteps: 4,
   };
 };
 
@@ -53,7 +58,7 @@ const FlowLayout = () => {
               <p className="muted">{header.subtitle}</p>
             </div>
             <div className="page-header-side">
-              <Stepper currentStep={header.step} />
+              <Stepper currentStep={header.step} completedSteps={header.completedSteps} />
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface StepperProps {
   currentStep: 1 | 2 | 3 | 4;
+  completedSteps?: 1 | 2 | 3 | 4;
 }
 
 const labels = [
@@ -11,9 +12,10 @@ const labels = [
   "AI Consult",
 ] as const;
 
-const Stepper = ({ currentStep }: StepperProps) => {
+const Stepper = ({ currentStep, completedSteps }: StepperProps) => {
   const previousStepRef = useRef(currentStep);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
+  const completedThrough = completedSteps ?? currentStep;
 
   useEffect(() => {
     if (currentStep > previousStepRef.current) {
@@ -28,8 +30,8 @@ const Stepper = ({ currentStep }: StepperProps) => {
     <div className={`flow-stepper flow-stepper-${direction}`} aria-label="Campaign onboarding progress">
       {labels.map((label, index) => {
         const step = (index + 1) as 1 | 2 | 3 | 4;
-        const state = step === currentStep ? "active" : step < currentStep ? "done" : "todo";
-        const isFilled = step <= currentStep;
+        const state = step <= completedThrough ? "done" : step === currentStep ? "active" : "todo";
+        const isFilled = step <= completedThrough;
         return (
           <div
             key={label}
