@@ -47,8 +47,8 @@ const ApprovalsPage = () => {
 
   return (
     <PageLayout
-      title="Approvals"
-      subtitle="Campaigns that still need human approval before launch."
+      title="Pending Approvals"
+      subtitle="Campaigns that still need approval to proceed."
     >
       {loading ? (
         <div className="row">
@@ -63,24 +63,28 @@ const ApprovalsPage = () => {
       ) : (
         <div className="stack">
           {pendingCampaigns.map(({ campaign, pending }) => (
-            <Card key={campaign.id}>
-              <div className="row row-between row-wrap">
+            <Link
+              key={campaign.id}
+              className="approvals-card-link"
+              to={`/campaigns/${campaign.id}/approvals`}
+              aria-label={`Open approvals for ${campaign.name}`}
+            >
+              <Card>
                 <div className="stack-sm">
                   <strong>{campaign.name}</strong>
                   <span className="muted">
                     Created: {new Date(campaign.createdAt).toLocaleString()}
                   </span>
                 </div>
-                <Link to={`/campaigns/${campaign.id}/approvals`}>Open details</Link>
-              </div>
-              <div className="approvals-status-row">
-                {pending.map((key) => (
-                  <Badge key={key} tone="warning">
-                    Pending: {approvalLabels[key]}
-                  </Badge>
-                ))}
-              </div>
-            </Card>
+                <div className="approvals-status-row">
+                  {pending.map((key) => (
+                    <Badge key={key} tone="warning">
+                      Pending: {approvalLabels[key]}
+                    </Badge>
+                  ))}
+                </div>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { fakeApi } from "../api/fakeApi";
-import type { Campaign } from "../types";
+import type { ApprovalDecision, ApprovalKey, Campaign } from "../types";
 import PageLayout from "../components/PageLayout";
+import FlowFooter from "../components/FlowFooter";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
-
-type ApprovalKey = "strategy" | "deliveryMethod" | "storyboard";
 
 const approvalItems: Array<{ key: ApprovalKey; title: string; description: string }> = [
   {
@@ -30,9 +29,21 @@ const approvalItems: Array<{ key: ApprovalKey; title: string; description: strin
 
 const CampaignApprovalsPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<ApprovalKey | null>(null);
+  const [savingFeedbackKey, setSavingFeedbackKey] = useState<ApprovalKey | null>(null);
+  const [openFeedback, setOpenFeedback] = useState<Record<ApprovalKey, boolean>>({
+    strategy: false,
+    deliveryMethod: false,
+    storyboard: false,
+  });
+  const [feedbackDrafts, setFeedbackDrafts] = useState<Record<ApprovalKey, string>>({
+    strategy: "",
+    deliveryMethod: "",
+    storyboard: "",
+  });
   const [expandedItems, setExpandedItems] = useState<Record<ApprovalKey, boolean>>({
     strategy: false,
     deliveryMethod: false,
@@ -51,12 +62,18 @@ const CampaignApprovalsPage = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const pendingCount = useMemo(() => {
-    if (!campaign?.journey?.approvals) {
-      return approvalItems.length;
+  useEffect(() => {
+    if (!campaign?.journey?.approvalFeedback) {
+      return;
     }
-    return approvalItems.filter((item) => !campaign.journey?.approvals[item.key]).length;
+
+    setFeedbackDrafts((prev) => ({
+      strategy: campaign.journey?.approvalFeedback?.strategy ?? prev.strategy,
+      deliveryMethod: campaign.journey?.approvalFeedback?.deliveryMethod ?? prev.deliveryMethod,
+      storyboard: campaign.journey?.approvalFeedback?.storyboard ?? prev.storyboard,
+    }));
   }, [campaign]);
+
   const isAllExpanded = useMemo(
     () => approvalItems.every((item) => expandedItems[item.key]),
     [expandedItems]
@@ -76,6 +93,24 @@ const CampaignApprovalsPage = () => {
     }
   };
 
+  const onDecline = async (key: ApprovalKey) => {
+    if (!id) {
+      return;
+    }
+
+    setSavingKey(key);
+    try {
+      const updated = await fakeApi.declineJourneyApproval(id, key);
+      setCampaign(updated);
+      setOpenFeedback((prev) => ({
+        ...prev,
+        [key]: true,
+      }));
+    } finally {
+      setSavingKey(null);
+    }
+  };
+
   const onToggleAll = () => {
     setExpandedItems({
       strategy: !isAllExpanded,
@@ -88,6 +123,66 @@ const CampaignApprovalsPage = () => {
     setExpandedItems((prev) => ({
       ...prev,
       [key]: open,
+    }));
+  };
+
+  const onChangeFeedback = (key: ApprovalKey, value: string) => {
+    setFeedbackDrafts((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const onSaveFeedback = async (key: ApprovalKey) => {
+    if (!id) {
+      return;
+    }
+
+    const nextFeedback = feedbackDrafts[key].trim();
+    if (!nextFeedback) {
+      return;
+    }
+
+    setSavingFeedbackKey(key);
+    try {
+      const updated = await fakeApi.saveJourneyApprovalFeedback(id, key, nextFeedback);
+      setCampaign(updated);
+      setOpenFeedback((prev) => ({
+        ...prev,
+        [key]: false,
+      }));
+    } finally {
+      setSavingFeedbackKey(null);
+    }
+  };
+
+  const onRemoveFeedback = async (key: ApprovalKey) => {
+    if (!id) {
+      return;
+    }
+
+    setSavingFeedbackKey(key);
+    try {
+      const updated = await fakeApi.removeJourneyApprovalFeedback(id, key);
+      setCampaign(updated);
+      setFeedbackDrafts((prev) => ({
+        ...prev,
+        [key]: "",
+      }));
+      setOpenFeedback((prev) => ({
+        ...prev,
+        [key]: false,
+      }));
+    } finally {
+      setSavingFeedbackKey(null);
+    }
+  };
+
+  const onCancelFeedbackChanges = (key: ApprovalKey) => {
+    const savedValue = campaign?.journey?.approvalFeedback?.[key] ?? "";
+    setFeedbackDrafts((prev) => ({
+      ...prev,
+      [key]: savedValue,
     }));
   };
 
@@ -115,66 +210,147 @@ const CampaignApprovalsPage = () => {
 
   return (
     <PageLayout
-      title={`${campaign.name} Approvals`}
-      subtitle={`${pendingCount} item${pendingCount === 1 ? "" : "s"} pending`}
+      title="Campaign Approvals"
+      subtitle="The AI needs your approval before proceeding. If you choose to decline, please provide feedback for the AI to address."
+      bodyClassName="stack flow-page-body approvals-page-body"
     >
-      <Card>
-        <div className="row row-between row-wrap">
-          <div className="stack-sm">
-            <strong>{campaign.name}</strong>
-            <span className="muted">Campaign ID: {campaign.id}</span>
+      <div className="approvals-toolbar-wrap">
+        <div className="card approvals-toolbar">
+          <div className="row row-between row-wrap">
+            <div className="stack-sm">
+              <strong>{campaign.name}</strong>
+              <span className="muted">Campaign ID: {campaign.id}</span>
+            </div>
+            <Button variant="ghost" onClick={onToggleAll}>
+              {isAllExpanded ? "Collapse all" : "Expand all"}
+            </Button>
           </div>
-          <Button variant="ghost" onClick={onToggleAll}>
-            {isAllExpanded ? "Collapse all" : "Expand all"}
-          </Button>
         </div>
-      </Card>
+      </div>
 
       <div className="approvals-list">
-        {approvalItems.map((item) => {
-          const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
-          const isSaving = savingKey === item.key;
+          {approvalItems.map((item) => {
+            const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
+            const isSaving = savingKey === item.key;
+            const isSavingFeedback = savingFeedbackKey === item.key;
+            const savedFeedback = campaign.journey?.approvalFeedback?.[item.key];
+            const savedFeedbackNormalized = (savedFeedback ?? "").trim();
+            const draftFeedbackNormalized = feedbackDrafts[item.key].trim();
+            const isFeedbackChanged = draftFeedbackNormalized !== savedFeedbackNormalized;
+            const itemDecision: ApprovalDecision =
+              campaign.journey?.approvalDecisions?.[item.key] ??
+              (isApproved ? "approved" : savedFeedback ? "declined" : "pending");
+            const isDeclined = itemDecision === "declined";
 
-          return (
-            <details
-              key={item.key}
-              className="approvals-pane"
-              open={expandedItems[item.key]}
-              onToggle={(event) =>
-                onTogglePane(item.key, (event.currentTarget as HTMLDetailsElement).open)
-              }
-            >
-              <summary className="approvals-pane-summary">
-                <div className="approvals-pane-head">
-                  <strong>{item.title}</strong>
-                  <div className="row approvals-pane-meta">
-                    <Badge tone={isApproved ? "success" : "warning"}>
-                      {isApproved ? "Approved" : "Pending"}
-                    </Badge>
-                    <span className="approvals-pane-caret" aria-hidden="true" />
+            return (
+              <details
+                key={item.key}
+                className="approvals-pane"
+                open={expandedItems[item.key]}
+                onToggle={(event) =>
+                  onTogglePane(item.key, (event.currentTarget as HTMLDetailsElement).open)
+                }
+              >
+                <summary className="approvals-pane-summary">
+                  <div className="approvals-pane-head">
+                    <strong>{item.title}</strong>
+                    <div className="row approvals-pane-meta">
+                      <Badge tone={isApproved ? "success" : "warning"}>
+                        {itemDecision === "approved"
+                          ? "Approved"
+                          : itemDecision === "declined"
+                            ? "Declined"
+                            : "Pending"}
+                      </Badge>
+                      <span className="approvals-pane-caret" aria-hidden="true" />
+                    </div>
                   </div>
+                </summary>
+                <div className="approvals-pane-body">
+                  <p className="muted">{item.description}</p>
+                  <div className="approvals-actions">
+                    {itemDecision === "approved" ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => onSetApproval(item.key, false)}
+                        disabled={isSaving}
+                      >
+                        {isSaving ? "Saving..." : "Remove approval"}
+                      </Button>
+                    ) : isDeclined ? (
+                      <Button
+                        variant="secondary"
+                        className="approvals-decline-btn"
+                        onClick={() => onRemoveFeedback(item.key)}
+                        disabled={isSavingFeedback}
+                      >
+                        {isSavingFeedback ? "Undoing..." : "Undo Decline"}
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="primary"
+                          onClick={() => onSetApproval(item.key, true)}
+                          disabled={isSaving}
+                        >
+                          {isSaving ? "Saving..." : `Approve ${item.title}`}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          className="approvals-decline-btn"
+                          onClick={() => onDecline(item.key)}
+                          disabled={isSaving}
+                        >
+                          Decline
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  {openFeedback[item.key] || isDeclined ? (
+                    <div className="stack-sm approvals-feedback-panel">
+                      <label className="field-label" htmlFor={`approval-feedback-${item.key}`}>
+                        Please provide feedback for the AI to improve on
+                      </label>
+                      <textarea
+                        id={`approval-feedback-${item.key}`}
+                        className="textarea"
+                        rows={3}
+                        value={feedbackDrafts[item.key]}
+                        onChange={(event) => onChangeFeedback(item.key, event.target.value)}
+                        placeholder={`Share feedback for ${item.title.toLowerCase()}...`}
+                      />
+                      <div className="row">
+                        <Button
+                          variant="primary"
+                          onClick={() => onSaveFeedback(item.key)}
+                          disabled={
+                            isSavingFeedback || !draftFeedbackNormalized || !isFeedbackChanged
+                          }
+                        >
+                          {isSavingFeedback ? "Saving..." : "Save feedback"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => onCancelFeedbackChanges(item.key)}
+                          disabled={!isFeedbackChanged}
+                        >
+                          Cancel changes
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-              </summary>
-              <div className="approvals-pane-body">
-                <p className="muted">{item.description}</p>
-                <div className="approvals-actions">
-                  <Button
-                    variant={isApproved ? "secondary" : "primary"}
-                    onClick={() => onSetApproval(item.key, !isApproved)}
-                    disabled={isSaving}
-                  >
-                    {isSaving
-                      ? "Saving..."
-                      : isApproved
-                        ? "Mark Pending"
-                        : `Approve ${item.title}`}
-                  </Button>
-                </div>
-              </div>
-            </details>
-          );
-        })}
+              </details>
+            );
+          })}
       </div>
+      <FlowFooter>
+        <div className="flow-footer-actions">
+          <Button type="button" variant="secondary" onClick={() => navigate("/approvals")}>
+            Back
+          </Button>
+        </div>
+      </FlowFooter>
     </PageLayout>
   );
 };

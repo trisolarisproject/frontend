@@ -1,4 +1,6 @@
 import type {
+  ApprovalDecision,
+  ApprovalKey,
   AppDatabase,
   Asset,
   Campaign,
@@ -111,6 +113,19 @@ const defaultApprovalsState = (): NonNullable<Campaign["journey"]>["approvals"] 
   storyboard: false,
 });
 
+const defaultApprovalDecisionsState = (): Record<ApprovalKey, ApprovalDecision> => ({
+  strategy: "pending",
+  deliveryMethod: "pending",
+  storyboard: "pending",
+});
+
+const normalizeApprovalDecisions = (
+  decisions?: Partial<Record<ApprovalKey, ApprovalDecision>>
+): Record<ApprovalKey, ApprovalDecision> => ({
+  ...defaultApprovalDecisionsState(),
+  ...(decisions ?? {}),
+});
+
 const defaultJourneyState = (): NonNullable<Campaign["journey"]> => ({
   phase: "intake",
   flowStep: 1,
@@ -128,6 +143,8 @@ const defaultJourneyState = (): NonNullable<Campaign["journey"]> => ({
   taskProgress: 0,
   taskStatusMessage: "Waiting for input.",
   approvals: defaultApprovalsState(),
+  approvalFeedback: {},
+  approvalDecisions: defaultApprovalDecisionsState(),
   updatedAt: new Date().toISOString(),
 });
 
@@ -147,6 +164,12 @@ const ensureJourney = (campaign: Campaign): Campaign => {
       approvals: {
         ...defaultApprovalsState(),
         ...journey.approvals,
+      },
+      approvalFeedback: {
+        ...(journey.approvalFeedback ?? {}),
+      },
+      approvalDecisions: {
+        ...normalizeApprovalDecisions(journey.approvalDecisions),
       },
     },
   };
@@ -943,7 +966,7 @@ export const fakeApi = {
 
   async updateJourneyApproval(
     campaignId: string,
-    approvalType: "strategy" | "deliveryMethod" | "storyboard",
+    approvalType: ApprovalKey,
     approved: boolean
   ): Promise<Campaign> {
     await randomDelay(140, 260);
@@ -956,6 +979,94 @@ export const fakeApi = {
           approvals: {
             ...journey.approvals,
             [approvalType]: approved,
+            updatedAt: new Date().toISOString(),
+          },
+          approvalDecisions: {
+            ...normalizeApprovalDecisions(journey.approvalDecisions),
+            [approvalType]: approved ? "approved" : "pending",
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  },
+
+  async saveJourneyApprovalFeedback(
+    campaignId: string,
+    approvalType: ApprovalKey,
+    feedback: string
+  ): Promise<Campaign> {
+    await randomDelay(140, 260);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          approvalFeedback: {
+            ...(journey.approvalFeedback ?? {}),
+            [approvalType]: feedback.trim(),
+          },
+          approvalDecisions: {
+            ...normalizeApprovalDecisions(journey.approvalDecisions),
+            [approvalType]: "declined",
+          },
+          approvals: {
+            ...journey.approvals,
+            [approvalType]: false,
+            updatedAt: new Date().toISOString(),
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  },
+
+  async declineJourneyApproval(campaignId: string, approvalType: ApprovalKey): Promise<Campaign> {
+    await randomDelay(140, 260);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          approvals: {
+            ...journey.approvals,
+            [approvalType]: false,
+            updatedAt: new Date().toISOString(),
+          },
+          approvalDecisions: {
+            ...normalizeApprovalDecisions(journey.approvalDecisions),
+            [approvalType]: "declined",
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  },
+
+  async removeJourneyApprovalFeedback(
+    campaignId: string,
+    approvalType: ApprovalKey
+  ): Promise<Campaign> {
+    await randomDelay(140, 260);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      const nextFeedback = { ...(journey.approvalFeedback ?? {}) };
+      delete nextFeedback[approvalType];
+
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          approvalFeedback: nextFeedback,
+          approvalDecisions: {
+            ...normalizeApprovalDecisions(journey.approvalDecisions),
+            [approvalType]: "pending",
+          },
+          approvals: {
+            ...journey.approvals,
+            [approvalType]: false,
             updatedAt: new Date().toISOString(),
           },
           updatedAt: new Date().toISOString(),

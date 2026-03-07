@@ -11,6 +11,8 @@ export type Goal = "sales" | "leads" | "app_installs" | "brand_awareness";
 export type Tone = "bold" | "friendly" | "luxury" | "playful" | "minimal";
 
 export type TikTokShareStatus = "not_started" | "sharing" | "shared" | "failed";
+export type ApprovalKey = "strategy" | "deliveryMethod" | "storyboard";
+export type ApprovalDecision = "pending" | "approved" | "declined";
 export type JourneyPhase =
   | "intake"
   | "consult"
@@ -95,6 +97,8 @@ export interface Campaign {
       storyboard: boolean;
       updatedAt?: string;
     };
+    approvalFeedback?: Partial<Record<ApprovalKey, string>>;
+    approvalDecisions?: Record<ApprovalKey, ApprovalDecision>;
     updatedAt: string;
   };
 }
