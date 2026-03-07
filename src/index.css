@@ -288,6 +288,21 @@ a:hover {
   gap: 12px;
 }
 
+.flow-footer-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.flow-footer-primary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -992,6 +1007,16 @@ select.input {
 
   .flow-fixed-footer-inner {
     padding: 10px 16px 12px;
+  }
+
+  .flow-footer-actions {
+    flex-wrap: wrap;
+  }
+
+  .flow-footer-primary {
+    margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .row-between {

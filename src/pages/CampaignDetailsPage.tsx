@@ -13,7 +13,7 @@ import FlowFooter from "../components/FlowFooter";
 const goalOptions: Goal[] = ["sales", "leads", "app_installs", "brand_awareness"];
 const toneOptions: Tone[] = ["bold", "friendly", "luxury", "playful", "minimal"];
 
-const ConsultIntakePage = () => {
+const CampaignDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -89,7 +89,7 @@ const ConsultIntakePage = () => {
     return (
       <div className="row">
         <LoadingSpinner />
-        <span>Loading consult intake...</span>
+        <span>Loading campaign details...</span>
       </div>
     );
   }
@@ -116,7 +116,7 @@ const ConsultIntakePage = () => {
   return (
     <>
       <Card>
-        <form id="consult-intake-form" className="stack" onSubmit={onSubmit}>
+        <form id="campaign-details-form" className="stack" onSubmit={onSubmit}>
           {error ? <Banner kind="error">{error}</Banner> : null}
           <Input
             label="Who is the primary audience?"
@@ -173,12 +173,26 @@ const ConsultIntakePage = () => {
         </form>
       </Card>
       <FlowFooter>
-        <Button type="submit" form="consult-intake-form" disabled={saving}>
-          {saving ? "Preparing..." : "Continue to Clarifying Questions"}
-        </Button>
+        <div className="flow-footer-actions">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              if (!id) {
+                return;
+              }
+              navigate(`/campaigns/${id}/flow/upload-assets`);
+            }}
+          >
+            Back
+          </Button>
+          <Button type="submit" form="campaign-details-form" disabled={saving}>
+            {saving ? "Preparing..." : "Continue to AI Consult"}
+          </Button>
+        </div>
       </FlowFooter>
     </>
   );
 };
 
-export default ConsultIntakePage;
+export default CampaignDetailsPage;

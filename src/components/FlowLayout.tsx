@@ -16,9 +16,9 @@ const getFlowHeaderConfig = (pathname: string): FlowHeaderConfig => {
     };
   }
 
-  if (pathname.endsWith("/consult-intake")) {
+  if (pathname.endsWith("/campaign-details")) {
     return {
-      title: "Agentic Consult",
+      title: "Campaign Details",
       subtitle: "Provide initial inputs before reviewing AI clarifying questions.",
       step: 3,
     };

@@ -80,7 +80,7 @@ const ResearchMonitorPage = () => {
     return (
       <Card>
         <p>Complete prior flow stages first.</p>
-        <Link to={`/campaigns/${campaign.id}/flow/consult-intake`}>Go to consult intake</Link>
+        <Link to={`/campaigns/${campaign.id}/flow/campaign-details`}>Go to campaign details</Link>
       </Card>
     );
   }

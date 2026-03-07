@@ -68,7 +68,7 @@ const AssetIntakePage = () => {
         productDescription: description,
         productLink,
       });
-      navigate(`/campaigns/${id}/flow/consult-intake`);
+      navigate(`/campaigns/${id}/flow/campaign-details`);
     } catch {
       setError("Unable to save intake.");
     } finally {
@@ -124,9 +124,14 @@ const AssetIntakePage = () => {
         </form>
       </Card>
       <FlowFooter>
-        <Button type="submit" form="asset-intake-form" disabled={saving}>
-          {saving ? "Saving..." : "Continue"}
-        </Button>
+        <div className="flow-footer-actions">
+          <Button type="button" variant="secondary" onClick={() => navigate("/campaigns")}>
+            Back
+          </Button>
+          <Button type="submit" form="asset-intake-form" disabled={saving}>
+            {saving ? "Saving..." : "Continue to Details"}
+          </Button>
+        </div>
       </FlowFooter>
     </>
   );

@@ -6,7 +6,7 @@ import VideoDetailPage from "./pages/VideoDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import SidebarPlaceholderPage from "./pages/SidebarPlaceholderPage";
 import AssetIntakePage from "./pages/AssetIntakePage";
-import ConsultIntakePage from "./pages/ConsultIntakePage";
+import CampaignDetailsPage from "./pages/CampaignDetailsPage";
 import ConsultChatPage from "./pages/ConsultChatPage";
 import ConsultStatusPage from "./pages/ConsultStatusPage";
 import CampaignAssetsPage from "./pages/CampaignAssetsPage";
@@ -23,7 +23,7 @@ const App = () => {
         <Route path="/campaigns/:id/assets" element={<CampaignAssetsPage />} />
         <Route path="/campaigns/:id/flow" element={<FlowLayout />}>
           <Route path="upload-assets" element={<AssetIntakePage />} />
-          <Route path="consult-intake" element={<ConsultIntakePage />} />
+          <Route path="campaign-details" element={<CampaignDetailsPage />} />
           <Route path="consult-chat" element={<ConsultChatPage />} />
           <Route path="consult-status" element={<ConsultStatusPage />} />
           <Route path="research" element={<ConsultStatusPage />} />

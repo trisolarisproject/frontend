@@ -253,15 +253,29 @@ const ConsultChatPage = () => {
 
       </div>
       <FlowFooter>
-        <div className="row row-between row-wrap">
-          <span className="muted">
-            {unansweredCount === 0
-              ? "All answers provided."
-              : `${unansweredCount} question${unansweredCount > 1 ? "s" : ""} still need answers.`}
-          </span>
-          <Button type="button" onClick={() => void submitAnswers()} disabled={submitting || unansweredCount > 0}>
-            {submitting ? "Submitting..." : "Submit my answers"}
+        <div className="flow-footer-actions">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              if (!id) {
+                return;
+              }
+              navigate(`/campaigns/${id}/flow/campaign-details`);
+            }}
+          >
+            Back
           </Button>
+          <div className="flow-footer-primary">
+            <span className="muted">
+              {unansweredCount === 0
+                ? "All answers provided."
+                : `${unansweredCount} question${unansweredCount > 1 ? "s" : ""} still need answers.`}
+            </span>
+            <Button type="button" onClick={() => void submitAnswers()} disabled={submitting || unansweredCount > 0}>
+              {submitting ? "Submitting..." : "Submit my answers"}
+            </Button>
+          </div>
         </div>
       </FlowFooter>
     </>
