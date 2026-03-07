@@ -9,11 +9,13 @@ interface PageLayoutProps {
 }
 
 const PageLayout = ({ title, subtitle, topContent, children, bodyClassName = "stack" }: PageLayoutProps) => {
+  const hasTopContent = Boolean(topContent);
+
   return (
     <div className="page-layout">
       <header className="page-header-bar">
         <div className="page-header-inner">
-          <div className="page-header-main">
+          <div className={`page-header-main${hasTopContent ? " page-header-main-with-side" : ""}`}>
             <div className="page-header-text">
               <h1>{title}</h1>
               {subtitle ? <p className="muted">{subtitle}</p> : null}

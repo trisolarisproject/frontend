@@ -47,7 +47,7 @@ const FlowLayout = () => {
     <div className="page-layout">
       <header className="page-header-bar">
         <div className="page-header-inner">
-          <div className="page-header-main">
+          <div className="page-header-main page-header-main-with-side">
             <div className="page-header-text">
               <h1>{header.title}</h1>
               <p className="muted">{header.subtitle}</p>

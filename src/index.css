@@ -214,6 +214,17 @@ a:hover {
   gap: 16px;
 }
 
+.page-header-main-with-side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 16px;
+}
+
+.page-header-text {
+  min-width: 0;
+}
+
 .page-header-text h1 {
   margin: 0;
   color: #1b2c52;
@@ -226,7 +237,9 @@ a:hover {
 
 .page-header-side {
   min-width: 0;
-  width: min(100%, 760px);
+  width: 100%;
+  align-self: start;
+  justify-self: stretch;
 }
 
 .page-header-side .flow-step {
@@ -922,6 +935,10 @@ select.input {
   .page-header-main {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .page-header-main-with-side {
+    grid-template-columns: 1fr;
   }
 
   .page-header-side {
