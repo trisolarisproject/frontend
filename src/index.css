@@ -455,6 +455,12 @@ select.input {
   border-color: #f3dab1;
 }
 
+.badge-error {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border-color: #f3c6cc;
+}
+
 .flow-stepper {
   display: flex;
   margin-bottom: 0;

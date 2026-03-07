@@ -79,6 +79,20 @@ const CampaignApprovalsPage = () => {
     () => approvalItems.every((item) => expandedItems[item.key]),
     [expandedItems]
   );
+  const pendingItemsCount = useMemo(() => {
+    if (!campaign) {
+      return approvalItems.length;
+    }
+
+    return approvalItems.filter((item) => {
+      const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
+      const savedFeedback = campaign.journey?.approvalFeedback?.[item.key];
+      const decision: ApprovalDecision =
+        campaign.journey?.approvalDecisions?.[item.key] ??
+        (isApproved ? "approved" : savedFeedback ? "declined" : "pending");
+      return decision === "pending";
+    }).length;
+  }, [campaign]);
 
   const onSetApproval = async (key: ApprovalKey, approved: boolean) => {
     if (!id) {
@@ -279,7 +293,15 @@ const CampaignApprovalsPage = () => {
                   <div className="approvals-pane-head">
                     <strong>{item.title}</strong>
                     <div className="row approvals-pane-meta">
-                      <Badge tone={isApproved ? "success" : "warning"}>
+                      <Badge
+                        tone={
+                          itemDecision === "declined"
+                            ? "error"
+                            : isApproved
+                              ? "success"
+                              : "warning"
+                        }
+                      >
                         {itemDecision === "approved"
                           ? "Approved"
                           : itemDecision === "declined"
@@ -407,7 +429,17 @@ const CampaignApprovalsPage = () => {
             Back
           </Button>
           <div className="flow-footer-primary">
-            <Button type="button" variant="primary" onClick={onSubmit}>
+            <span className="muted">
+              {pendingItemsCount === 0
+                ? "All items reviewed."
+                : `${pendingItemsCount} item${pendingItemsCount > 1 ? "s" : ""} pending`}
+            </span>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={onSubmit}
+              disabled={pendingItemsCount > 0}
+            >
               Submit
             </Button>
           </div>

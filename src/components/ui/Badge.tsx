@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
 
 interface BadgeProps extends PropsWithChildren {
-  tone?: "neutral" | "success" | "warning";
+  tone?: "neutral" | "success" | "warning" | "error";
 }
 
 const Badge = ({ children, tone = "neutral" }: BadgeProps) => {
