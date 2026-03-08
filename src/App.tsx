@@ -15,6 +15,8 @@ import ApprovalsPage from "./pages/ApprovalsPage";
 import CampaignApprovalsPage from "./pages/CampaignApprovalsPage";
 import PastApprovalsPage from "./pages/PastApprovalsPage";
 import CampaignPastApprovalsPage from "./pages/CampaignPastApprovalsPage";
+import PerformancePage from "./pages/PerformancePage";
+import CampaignPerformancePage from "./pages/CampaignPerformancePage";
 
 const App = () => {
   return (
@@ -38,7 +40,8 @@ const App = () => {
           <Route path="asset-posting" element={<ConsultStatusPage />} />
         </Route>
         <Route path="/summary" element={<SidebarPlaceholderPage />} />
-        <Route path="/performance" element={<SidebarPlaceholderPage />} />
+        <Route path="/performance" element={<PerformancePage />} />
+        <Route path="/performance/:id" element={<CampaignPerformancePage />} />
         <Route path="/audiences" element={<SidebarPlaceholderPage />} />
         <Route path="/creative-library" element={<SidebarPlaceholderPage />} />
         <Route path="/videos/:videoId" element={<VideoDetailPage />} />

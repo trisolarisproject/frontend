@@ -132,6 +132,36 @@ export interface Video {
   hashtags: string[];
 }
 
+export interface PerformanceSeriesPoint {
+  label: string;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+}
+
+export interface CampaignPerformance {
+  campaignId: string;
+  generatedAt: string;
+  totals: {
+    impressions: number;
+    clicks: number;
+    conversions: number;
+    spend: number;
+    revenue: number;
+    ctr: number;
+    conversionRate: number;
+    roas: number;
+  };
+  series: PerformanceSeriesPoint[];
+  channels: Array<{
+    label: string;
+    spend: number;
+    impressions: number;
+    clicks: number;
+    conversions: number;
+  }>;
+}
+
 export interface AppDatabase {
   campaigns: Campaign[];
   assets: Asset[];

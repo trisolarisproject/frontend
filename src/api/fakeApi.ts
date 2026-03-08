@@ -1,4 +1,5 @@
 import type {
+  CampaignPerformance,
   ApprovalDecision,
   ApprovalKey,
   AppDatabase,
@@ -34,7 +35,7 @@ const hashString = (value: string): number => {
   return Math.abs(hash);
 };
 
-const createProgressIncrements = (campaignId: string): number[] => {
+  const createProgressIncrements = (campaignId: string): number[] => {
   const tickCount = Math.ceil(GENERATION_MS / TICK_MS);
   const seed = hashString(campaignId);
   let remaining = 100;
@@ -374,6 +375,80 @@ const finalizeGenerationIfReady = (db = loadDatabase()): AppDatabase => {
   const next = { ...db, campaigns: nextCampaigns };
   saveDatabase(next);
   return next;
+};
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, value));
+
+const createCampaignPerformance = (campaign: Campaign): CampaignPerformance => {
+  const seed = hashString(campaign.id);
+  const baseImpressions = 18000 + (seed % 42000);
+  const ctr = 0.018 + ((seed % 35) / 1000);
+  const conversionRate = 0.035 + (((seed >> 3) % 55) / 1000);
+  const spend = 1800 + (seed % 5200);
+  const clicks = Math.round(baseImpressions * ctr);
+  const conversions = Math.max(1, Math.round(clicks * conversionRate));
+  const cpa = 20 + ((seed >> 2) % 55);
+  const revenuePerConversion = cpa * (1.4 + ((seed >> 4) % 140) / 100);
+  const revenue = Math.round(conversions * revenuePerConversion);
+  const roas = spend > 0 ? revenue / spend : 0;
+
+  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const series = dayLabels.map((label, index) => {
+    const wave = 0.75 + (((seed + index * 19) % 55) / 100);
+    const impressions = Math.round((baseImpressions / dayLabels.length) * wave);
+    const dayCtr = clamp(ctr * (0.9 + ((seed + index * 7) % 18) / 100), 0.01, 0.09);
+    const clicks = Math.round(impressions * dayCtr);
+    const dayCvRate = clamp(
+      conversionRate * (0.86 + ((seed + index * 11) % 24) / 100),
+      0.01,
+      0.25
+    );
+    const conversions = Math.max(0, Math.round(clicks * dayCvRate));
+    return {
+      label,
+      impressions,
+      clicks,
+      conversions,
+    };
+  });
+
+  const channels = [
+    { label: "TikTok", weight: 0.5 },
+    { label: "Instagram", weight: 0.3 },
+    { label: "YouTube", weight: 0.2 },
+  ].map((channel, index) => {
+    const channelWeight = channel.weight + (((seed >> (index + 1)) % 6) - 3) / 100;
+    const normalizedWeight = clamp(channelWeight, 0.15, 0.7);
+    const channelImpressions = Math.round(baseImpressions * normalizedWeight);
+    const channelClicks = Math.round(clicks * normalizedWeight);
+    const channelConversions = Math.round(conversions * normalizedWeight);
+    const channelSpend = Math.round(spend * normalizedWeight);
+    return {
+      label: channel.label,
+      spend: channelSpend,
+      impressions: channelImpressions,
+      clicks: channelClicks,
+      conversions: channelConversions,
+    };
+  });
+
+  return {
+    campaignId: campaign.id,
+    generatedAt: new Date().toISOString(),
+    totals: {
+      impressions: baseImpressions,
+      clicks,
+      conversions,
+      spend,
+      revenue,
+      ctr,
+      conversionRate,
+      roas,
+    },
+    series,
+    channels,
+  };
 };
 
 export const fakeApi = {
@@ -968,6 +1043,16 @@ export const fakeApi = {
         },
       };
     });
+  },
+
+  async getCampaignPerformance(campaignId: string): Promise<CampaignPerformance> {
+    await randomDelay(280, 520);
+    const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
+    const campaign = db.campaigns.find((item) => item.id === campaignId);
+    if (!campaign) {
+      throw new Error("Campaign not found.");
+    }
+    return createCampaignPerformance(ensureJourney(campaign));
   },
 
   async updateJourneyApproval(

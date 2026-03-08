@@ -1107,6 +1107,118 @@ select.input {
   border-bottom: 0;
 }
 
+.performance-card-kpis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+  color: #3a4b70;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.performance-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.performance-summary-tile {
+  border: 1px solid #d8deea;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.performance-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.performance-chart-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 130px;
+  align-items: center;
+  gap: 10px;
+}
+
+.performance-chart-label {
+  font-weight: 600;
+  color: #344466;
+}
+
+.performance-chart-track {
+  height: 14px;
+  border-radius: 999px;
+  background: #dbe5f5;
+  overflow: hidden;
+}
+
+.performance-chart-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2b61c8, #5a8ef0);
+}
+
+.performance-chart-fill-channel {
+  background: linear-gradient(90deg, #c67a17, #ed9121);
+}
+
+.performance-chart-value {
+  text-align: right;
+  color: #4f5f7f;
+  font-variant-numeric: tabular-nums;
+}
+
+.performance-line-chart-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.performance-line-chart {
+  width: 100%;
+  height: auto;
+  border: 1px solid #d8deea;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  padding: 4px;
+}
+
+.performance-line-chart-stroke {
+  fill: none;
+  stroke: #2b61c8;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.performance-line-chart-dot {
+  fill: #5a8ef0;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.performance-line-chart-labels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.performance-line-chart-label-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid #dde4f3;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
 .chat-thinking {
   width: 72px;
 }
@@ -1266,5 +1378,19 @@ select.input {
 
   .campaign-summary-head {
     flex-direction: column;
+  }
+
+  .performance-card-kpis {
+    justify-content: flex-start;
+  }
+
+  .performance-chart-row {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .performance-chart-value {
+    grid-column: 1 / -1;
+    text-align: left;
+    padding-left: 56px;
   }
 }
