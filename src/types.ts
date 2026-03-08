@@ -139,8 +139,11 @@ export interface PerformanceSeriesPoint {
   conversions: number;
 }
 
+export type PerformancePeriod = "7d" | "14d" | "1m" | "1y" | "all";
+
 export interface CampaignPerformance {
   campaignId: string;
+  period: PerformancePeriod;
   generatedAt: string;
   totals: {
     impressions: number;
@@ -160,6 +163,7 @@ export interface CampaignPerformance {
     clicks: number;
     conversions: number;
   }>;
+  emptyStateMessage?: string;
 }
 
 export interface AppDatabase {

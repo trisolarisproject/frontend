@@ -1117,6 +1117,45 @@ select.input {
   font-size: 13px;
 }
 
+.performance-toolbar-controls {
+  align-items: flex-end;
+}
+
+.performance-periods {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.performance-period-chip {
+  border: 1px solid #cfdaef;
+  background: #ffffff;
+  color: #405173;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.performance-period-chip:hover {
+  border-color: #b7c8e7;
+  background: #f5f9ff;
+}
+
+.performance-period-chip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.performance-period-chip-active {
+  border-color: #5a8ef0;
+  background: #edf3ff;
+  color: #1f4fa8;
+}
+
 .performance-summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -1381,6 +1420,15 @@ select.input {
   }
 
   .performance-card-kpis {
+    justify-content: flex-start;
+  }
+
+  .performance-toolbar-controls {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .performance-periods {
     justify-content: flex-start;
   }
 

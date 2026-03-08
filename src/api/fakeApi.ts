@@ -1,5 +1,6 @@
 import type {
   CampaignPerformance,
+  PerformancePeriod,
   ApprovalDecision,
   ApprovalKey,
   AppDatabase,
@@ -380,12 +381,114 @@ const finalizeGenerationIfReady = (db = loadDatabase()): AppDatabase => {
 const clamp = (value: number, min: number, max: number): number =>
   Math.max(min, Math.min(max, value));
 
-const createCampaignPerformance = (campaign: Campaign): CampaignPerformance => {
+const createPeriodLabels = (period: PerformancePeriod): string[] => {
+  const now = new Date();
+  if (period === "7d") {
+    return Array.from({ length: 7 })
+      .map((_, index) => {
+        const d = new Date(now);
+        d.setDate(now.getDate() - (6 - index));
+        return d.toLocaleDateString(undefined, { weekday: "short" });
+      });
+  }
+  if (period === "14d") {
+    return Array.from({ length: 14 })
+      .map((_, index) => {
+        const d = new Date(now);
+        d.setDate(now.getDate() - (13 - index));
+        return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      });
+  }
+  if (period === "1m") {
+    return Array.from({ length: 30 })
+      .map((_, index) => {
+        const d = new Date(now);
+        d.setDate(now.getDate() - (29 - index));
+        return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      });
+  }
+  if (period === "1y") {
+    return Array.from({ length: 12 })
+      .map((_, index) => {
+        const d = new Date(now);
+        d.setMonth(now.getMonth() - (11 - index));
+        return d.toLocaleDateString(undefined, { month: "short" });
+      });
+  }
+  return Array.from({ length: 24 })
+    .map((_, index) => {
+      const d = new Date(now);
+      d.setMonth(now.getMonth() - (23 - index));
+      return d.toLocaleDateString(undefined, { month: "short", year: "2-digit" });
+    });
+};
+
+const hasDataForPeriod = (campaign: Campaign, period: PerformancePeriod): boolean => {
+  const ageDays = Math.floor(
+    (Date.now() - new Date(campaign.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (period === "7d") {
+    return ageDays >= 0;
+  }
+  if (period === "14d") {
+    return ageDays >= 14;
+  }
+  if (period === "1m") {
+    return ageDays >= 30;
+  }
+  if (period === "1y") {
+    return ageDays >= 365;
+  }
+  return ageDays >= 1;
+};
+
+const createCampaignPerformance = (
+  campaign: Campaign,
+  period: PerformancePeriod
+): CampaignPerformance => {
   const seed = hashString(campaign.id);
-  const baseImpressions = 18000 + (seed % 42000);
+  const periodScaleByPeriod: Record<PerformancePeriod, number> = {
+    "7d": 1,
+    "14d": 1.65,
+    "1m": 3.4,
+    "1y": 12,
+    all: 20,
+  };
+
+  if (!hasDataForPeriod(campaign, period)) {
+    const periodLabelMap: Record<PerformancePeriod, string> = {
+      "7d": "last 7 days",
+      "14d": "last 2 weeks",
+      "1m": "past month",
+      "1y": "past year",
+      all: "all time",
+    };
+    return {
+      campaignId: campaign.id,
+      period,
+      generatedAt: new Date().toISOString(),
+      totals: {
+        impressions: 0,
+        clicks: 0,
+        conversions: 0,
+        spend: 0,
+        revenue: 0,
+        ctr: 0,
+        conversionRate: 0,
+        roas: 0,
+      },
+      series: [],
+      channels: [],
+      emptyStateMessage: `No performance data is available for the ${periodLabelMap[period]} yet.`,
+    };
+  }
+
+  const periodScale = periodScaleByPeriod[period];
+  const baseImpressions = Math.round((18000 + (seed % 42000)) * periodScale);
   const ctr = 0.018 + ((seed % 35) / 1000);
   const conversionRate = 0.035 + (((seed >> 3) % 55) / 1000);
-  const spend = 1800 + (seed % 5200);
+  const spend = Math.round((1800 + (seed % 5200)) * periodScale);
   const clicks = Math.round(baseImpressions * ctr);
   const conversions = Math.max(1, Math.round(clicks * conversionRate));
   const cpa = 20 + ((seed >> 2) % 55);
@@ -393,10 +496,10 @@ const createCampaignPerformance = (campaign: Campaign): CampaignPerformance => {
   const revenue = Math.round(conversions * revenuePerConversion);
   const roas = spend > 0 ? revenue / spend : 0;
 
-  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const series = dayLabels.map((label, index) => {
+  const labels = createPeriodLabels(period);
+  const series = labels.map((label, index) => {
     const wave = 0.75 + (((seed + index * 19) % 55) / 100);
-    const impressions = Math.round((baseImpressions / dayLabels.length) * wave);
+    const impressions = Math.round((baseImpressions / labels.length) * wave);
     const dayCtr = clamp(ctr * (0.9 + ((seed + index * 7) % 18) / 100), 0.01, 0.09);
     const clicks = Math.round(impressions * dayCtr);
     const dayCvRate = clamp(
@@ -435,6 +538,7 @@ const createCampaignPerformance = (campaign: Campaign): CampaignPerformance => {
 
   return {
     campaignId: campaign.id,
+    period,
     generatedAt: new Date().toISOString(),
     totals: {
       impressions: baseImpressions,
@@ -1046,13 +1150,27 @@ export const fakeApi = {
   },
 
   async getCampaignPerformance(campaignId: string): Promise<CampaignPerformance> {
+    const period = "7d";
     await randomDelay(280, 520);
     const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
     const campaign = db.campaigns.find((item) => item.id === campaignId);
     if (!campaign) {
       throw new Error("Campaign not found.");
     }
-    return createCampaignPerformance(ensureJourney(campaign));
+    return createCampaignPerformance(ensureJourney(campaign), period);
+  },
+
+  async getCampaignPerformanceByPeriod(
+    campaignId: string,
+    period: PerformancePeriod
+  ): Promise<CampaignPerformance> {
+    await randomDelay(280, 520);
+    const db = finalizeFlowTasksIfReady(finalizeGenerationIfReady());
+    const campaign = db.campaigns.find((item) => item.id === campaignId);
+    if (!campaign) {
+      throw new Error("Campaign not found.");
+    }
+    return createCampaignPerformance(ensureJourney(campaign), period);
   },
 
   async updateJourneyApproval(
