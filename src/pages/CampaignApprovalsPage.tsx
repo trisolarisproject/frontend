@@ -50,6 +50,7 @@ const CampaignApprovalsPage = () => {
     storyboard: false,
   });
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -75,16 +76,24 @@ const CampaignApprovalsPage = () => {
     }));
   }, [campaign]);
 
+  const activeApprovalItems = useMemo(
+    () =>
+      approvalItems.filter((item) => {
+        const historyEntry = campaign?.journey?.approvalHistory?.[item.key];
+        return !historyEntry;
+      }),
+    [campaign]
+  );
   const isAllExpanded = useMemo(
-    () => approvalItems.every((item) => expandedItems[item.key]),
-    [expandedItems]
+    () => activeApprovalItems.every((item) => expandedItems[item.key]),
+    [activeApprovalItems, expandedItems]
   );
   const pendingItemsCount = useMemo(() => {
     if (!campaign) {
-      return approvalItems.length;
+      return activeApprovalItems.length;
     }
 
-    return approvalItems.filter((item) => {
+    return activeApprovalItems.filter((item) => {
       const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
       const savedFeedback = campaign.journey?.approvalFeedback?.[item.key];
       const decision: ApprovalDecision =
@@ -92,7 +101,7 @@ const CampaignApprovalsPage = () => {
         (isApproved ? "approved" : savedFeedback ? "declined" : "pending");
       return decision === "pending";
     }).length;
-  }, [campaign]);
+  }, [activeApprovalItems, campaign]);
 
   const onSetApproval = async (key: ApprovalKey, approved: boolean) => {
     if (!id) {
@@ -219,8 +228,19 @@ const CampaignApprovalsPage = () => {
     setIsSubmitDialogOpen(false);
   };
 
-  const onConfirmSubmit = () => {
-    setIsSubmitDialogOpen(false);
+  const onConfirmSubmit = async () => {
+    if (!id) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const updated = await fakeApi.submitJourneyApprovals(id);
+      setCampaign(updated);
+      setIsSubmitDialogOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -265,141 +285,147 @@ const CampaignApprovalsPage = () => {
         </div>
       </div>
 
-      <div className="approvals-list">
-          {approvalItems.map((item) => {
-            const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
-            const isSaving = savingKey === item.key;
-            const isSavingFeedback = savingFeedbackKey === item.key;
-            const isDeclineInProgress = openFeedback[item.key];
-            const savedFeedback = campaign.journey?.approvalFeedback?.[item.key];
-            const savedFeedbackNormalized = (savedFeedback ?? "").trim();
-            const draftFeedbackNormalized = feedbackDrafts[item.key].trim();
-            const isFeedbackChanged = draftFeedbackNormalized !== savedFeedbackNormalized;
-            const itemDecision: ApprovalDecision =
-              campaign.journey?.approvalDecisions?.[item.key] ??
-              (isApproved ? "approved" : savedFeedback ? "declined" : "pending");
-            const isDeclined = itemDecision === "declined";
+      {activeApprovalItems.length === 0 ? (
+        <Card>
+          <p>There are no active approvals to review.</p>
+        </Card>
+      ) : (
+        <div className="approvals-list">
+          {activeApprovalItems.map((item) => {
+                const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
+                const isSaving = savingKey === item.key;
+                const isSavingFeedback = savingFeedbackKey === item.key;
+                const isDeclineInProgress = openFeedback[item.key];
+                const savedFeedback = campaign.journey?.approvalFeedback?.[item.key];
+                const savedFeedbackNormalized = (savedFeedback ?? "").trim();
+                const draftFeedbackNormalized = feedbackDrafts[item.key].trim();
+                const isFeedbackChanged = draftFeedbackNormalized !== savedFeedbackNormalized;
+                const itemDecision: ApprovalDecision =
+                  campaign.journey?.approvalDecisions?.[item.key] ??
+                  (isApproved ? "approved" : savedFeedback ? "declined" : "pending");
+                const isDeclined = itemDecision === "declined";
 
-            return (
-              <details
-                key={item.key}
-                className="approvals-pane"
-                open={expandedItems[item.key]}
-                onToggle={(event) =>
-                  onTogglePane(item.key, (event.currentTarget as HTMLDetailsElement).open)
-                }
-              >
-                <summary className="approvals-pane-summary">
-                  <div className="approvals-pane-head">
-                    <strong>{item.title}</strong>
-                    <div className="row approvals-pane-meta">
-                      <Badge
-                        tone={
-                          itemDecision === "declined"
-                            ? "error"
-                            : isApproved
-                              ? "success"
-                              : "warning"
-                        }
-                      >
-                        {itemDecision === "approved"
-                          ? "Approved"
-                          : itemDecision === "declined"
-                            ? "Declined"
-                            : "Pending"}
-                      </Badge>
-                      <span className="approvals-pane-caret" aria-hidden="true" />
-                    </div>
-                  </div>
-                </summary>
-                <div className="approvals-pane-body">
-                  <p className="muted">{item.description}</p>
-                  <div className="approvals-actions">
-                    {itemDecision === "approved" ? (
-                      <Button
-                        variant="secondary"
-                        onClick={() => onSetApproval(item.key, false)}
-                        disabled={isSaving}
-                      >
-                        {isSaving ? "Saving..." : "Remove approval"}
-                      </Button>
-                    ) : isDeclined ? (
-                      <Button
-                        variant="secondary"
-                        className="approvals-decline-btn"
-                        onClick={() => onRemoveFeedback(item.key)}
-                        disabled={isSavingFeedback}
-                      >
-                        {isSavingFeedback ? "Undoing..." : "Undo Decline"}
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          variant="primary"
-                          onClick={() => onSetApproval(item.key, true)}
-                          disabled={isSaving || isDeclineInProgress}
-                        >
-                          {isSaving ? "Saving..." : `Approve ${item.title}`}
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          className="approvals-decline-btn"
-                          onClick={() => onDecline(item.key)}
-                          disabled={isSaving}
-                        >
-                          Decline
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                  {openFeedback[item.key] ? (
-                    <div className="stack-sm approvals-feedback-panel">
-                      <label className="field-label" htmlFor={`approval-feedback-${item.key}`}>
-                        Please provide feedback for the AI to improve on
-                      </label>
-                      <textarea
-                        id={`approval-feedback-${item.key}`}
-                        className="textarea"
-                        rows={3}
-                        value={feedbackDrafts[item.key]}
-                        onChange={(event) => onChangeFeedback(item.key, event.target.value)}
-                        placeholder={`Share feedback for ${item.title.toLowerCase()}...`}
-                      />
-                      <div className="row">
-                        <Button
-                          variant="primary"
-                          onClick={() => onSaveFeedback(item.key)}
-                          disabled={
-                            isSavingFeedback || !draftFeedbackNormalized || !isFeedbackChanged
-                          }
-                        >
-                          {isSavingFeedback ? "Saving..." : "Confirm Decline"}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => onCancelFeedbackChanges(item.key)}
-                        >
-                          {isDeclined ? "Done" : "Cancel"}
-                        </Button>
+                return (
+                  <details
+                    key={item.key}
+                    className="approvals-pane"
+                    open={expandedItems[item.key]}
+                    onToggle={(event) =>
+                      onTogglePane(item.key, (event.currentTarget as HTMLDetailsElement).open)
+                    }
+                  >
+                    <summary className="approvals-pane-summary">
+                      <div className="approvals-pane-head">
+                        <strong>{item.title}</strong>
+                        <div className="row approvals-pane-meta">
+                          <Badge
+                            tone={
+                              itemDecision === "declined"
+                                ? "error"
+                                : isApproved
+                                  ? "success"
+                                  : "warning"
+                            }
+                          >
+                            {itemDecision === "approved"
+                              ? "Approved"
+                              : itemDecision === "declined"
+                                ? "Declined"
+                                : "Pending"}
+                          </Badge>
+                          <span className="approvals-pane-caret" aria-hidden="true" />
+                        </div>
                       </div>
-                    </div>
-                  ) : isDeclined ? (
-                    <div className="stack-sm approvals-feedback-panel">
-                      {savedFeedbackNormalized ? (
-                        <p className="muted">{savedFeedbackNormalized}</p>
+                    </summary>
+                    <div className="approvals-pane-body">
+                      <p className="muted">{item.description}</p>
+                      <div className="approvals-actions">
+                        {itemDecision === "approved" ? (
+                          <Button
+                            variant="secondary"
+                            onClick={() => onSetApproval(item.key, false)}
+                            disabled={isSaving}
+                          >
+                            {isSaving ? "Saving..." : "Remove approval"}
+                          </Button>
+                        ) : isDeclined ? (
+                          <Button
+                            variant="secondary"
+                            className="approvals-decline-btn"
+                            onClick={() => onRemoveFeedback(item.key)}
+                            disabled={isSavingFeedback}
+                          >
+                            {isSavingFeedback ? "Undoing..." : "Undo Decline"}
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              variant="primary"
+                              onClick={() => onSetApproval(item.key, true)}
+                              disabled={isSaving || isDeclineInProgress}
+                            >
+                              {isSaving ? "Saving..." : `Approve ${item.title}`}
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              className="approvals-decline-btn"
+                              onClick={() => onDecline(item.key)}
+                              disabled={isSaving}
+                            >
+                              Decline
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                      {openFeedback[item.key] ? (
+                        <div className="stack-sm approvals-feedback-panel">
+                          <label className="field-label" htmlFor={`approval-feedback-${item.key}`}>
+                            Please provide feedback for the AI to improve on
+                          </label>
+                          <textarea
+                            id={`approval-feedback-${item.key}`}
+                            className="textarea"
+                            rows={3}
+                            value={feedbackDrafts[item.key]}
+                            onChange={(event) => onChangeFeedback(item.key, event.target.value)}
+                            placeholder={`Share feedback for ${item.title.toLowerCase()}...`}
+                          />
+                          <div className="row">
+                            <Button
+                              variant="primary"
+                              onClick={() => onSaveFeedback(item.key)}
+                              disabled={
+                                isSavingFeedback || !draftFeedbackNormalized || !isFeedbackChanged
+                              }
+                            >
+                              {isSavingFeedback ? "Saving..." : "Confirm Decline"}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              onClick={() => onCancelFeedbackChanges(item.key)}
+                            >
+                              {isDeclined ? "Done" : "Cancel"}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : isDeclined ? (
+                        <div className="stack-sm approvals-feedback-panel">
+                          {savedFeedbackNormalized ? (
+                            <p className="muted">{savedFeedbackNormalized}</p>
+                          ) : null}
+                          <div className="row">
+                            <Button variant="ghost" onClick={() => onEditFeedback(item.key)}>
+                              Edit
+                            </Button>
+                          </div>
+                        </div>
                       ) : null}
-                      <div className="row">
-                        <Button variant="ghost" onClick={() => onEditFeedback(item.key)}>
-                          Edit
-                        </Button>
-                      </div>
                     </div>
-                  ) : null}
-                </div>
-              </details>
-            );
+                  </details>
+                );
           })}
-      </div>
+        </div>
+      )}
       {isSubmitDialogOpen ? (
         <div className="modal-overlay" role="presentation">
           <div
@@ -416,8 +442,8 @@ const CampaignApprovalsPage = () => {
               <Button type="button" variant="ghost" onClick={onCancelSubmit}>
                 Cancel
               </Button>
-              <Button type="button" variant="primary" onClick={onConfirmSubmit}>
-                Submit
+              <Button type="button" variant="primary" onClick={onConfirmSubmit} disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit"}
               </Button>
             </div>
           </div>
@@ -438,9 +464,9 @@ const CampaignApprovalsPage = () => {
               type="button"
               variant="primary"
               onClick={onSubmit}
-              disabled={pendingItemsCount > 0}
+              disabled={pendingItemsCount > 0 || activeApprovalItems.length === 0 || isSubmitting}
             >
-              Submit
+              {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
           </div>
         </div>

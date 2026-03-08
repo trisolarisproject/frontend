@@ -13,6 +13,7 @@ export type Tone = "bold" | "friendly" | "luxury" | "playful" | "minimal";
 export type TikTokShareStatus = "not_started" | "sharing" | "shared" | "failed";
 export type ApprovalKey = "strategy" | "deliveryMethod" | "storyboard";
 export type ApprovalDecision = "pending" | "approved" | "declined";
+export type FinalApprovalDecision = Exclude<ApprovalDecision, "pending">;
 export type JourneyPhase =
   | "intake"
   | "consult"
@@ -99,6 +100,16 @@ export interface Campaign {
     };
     approvalFeedback?: Partial<Record<ApprovalKey, string>>;
     approvalDecisions?: Record<ApprovalKey, ApprovalDecision>;
+    approvalHistory?: Partial<
+      Record<
+        ApprovalKey,
+        {
+          decision: FinalApprovalDecision;
+          feedback?: string;
+          submittedAt: string;
+        }
+      >
+    >;
     updatedAt: string;
   };
 }

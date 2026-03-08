@@ -19,11 +19,12 @@ const approvalKeys: ApprovalKey[] = ["strategy", "deliveryMethod", "storyboard"]
 
 const getPendingApprovals = (campaign: Campaign): ApprovalKey[] => {
   const approvals = campaign.journey?.approvals;
+  const approvalHistory = campaign.journey?.approvalHistory;
   if (!approvals) {
     return approvalKeys;
   }
 
-  return approvalKeys.filter((key) => !approvals[key]);
+  return approvalKeys.filter((key) => !approvals[key] && !approvalHistory?.[key]);
 };
 
 const ApprovalsPage = () => {

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import brandLogo from "../../logo_50_by_50.svg";
 import { useLocation } from "react-router-dom";
+import { fakeApi } from "../api/fakeApi";
+import type { ApprovalKey, Campaign } from "../types";
 
 interface NavItem {
   to: string;
@@ -17,7 +19,8 @@ const primaryNavItems: NavItem[] = [
 const campaignNavItems: NavItem[] = [
   { to: "/campaigns", label: "Campaigns", end: true },
   { to: "/campaigns/new", label: "New Campaign" },
-  { to: "/approvals", label: "Approvals" },
+  { to: "/approvals", label: "Pending Approvals" },
+  { to: "/past-approvals", label: "Past Approvals" },
   { to: "/campaign-assets", label: "Campaign Assets" },
 ];
 
@@ -26,12 +29,52 @@ const utilityNavItems: NavItem[] = [
   { to: "/creative-library", label: "Creative Library" },
 ];
 
-const AppShell = () => {
+const approvalKeys: ApprovalKey[] = ["strategy", "deliveryMethod", "storyboard"];
+
+const getPendingApprovalsCount = (campaign: Campaign): number => {
+  const approvals = campaign.journey?.approvals;
+  const approvalHistory = campaign.journey?.approvalHistory;
+  if (!approvals) {
+    return approvalKeys.length;
+  }
+
+  return approvalKeys.filter((key) => !approvals[key] && !approvalHistory?.[key]).length;
+};
+
+  const AppShell = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
   const location = useLocation();
+  const pendingApprovalsBadgeLabel =
+    pendingApprovalsCount > 99 ? "99+" : pendingApprovalsCount.toString();
 
   useEffect(() => {
     setSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    let active = true;
+    fakeApi
+      .listCampaigns()
+      .then((campaigns) => {
+        if (!active) {
+          return;
+        }
+        const pendingCount = campaigns.reduce(
+          (total, campaign) => total + getPendingApprovalsCount(campaign),
+          0
+        );
+        setPendingApprovalsCount(pendingCount);
+      })
+      .catch(() => {
+        if (active) {
+          setPendingApprovalsCount(0);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, [location.pathname]);
 
   return (
@@ -89,7 +132,12 @@ const AppShell = () => {
               }
               onClick={() => setSidebarOpen(false)}
             >
-              {item.label}
+              <span className="side-link-text">{item.label}</span>
+              {item.to === "/approvals" ? (
+                <span className="side-link-badge" aria-label={`${pendingApprovalsCount} pending approvals`}>
+                  {pendingApprovalsBadgeLabel}
+                </span>
+              ) : null}
             </NavLink>
           ))}
         </nav>

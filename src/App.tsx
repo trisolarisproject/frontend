@@ -13,6 +13,8 @@ import CampaignAssetsPage from "./pages/CampaignAssetsPage";
 import FlowLayout from "./components/FlowLayout";
 import ApprovalsPage from "./pages/ApprovalsPage";
 import CampaignApprovalsPage from "./pages/CampaignApprovalsPage";
+import PastApprovalsPage from "./pages/PastApprovalsPage";
+import CampaignPastApprovalsPage from "./pages/CampaignPastApprovalsPage";
 
 const App = () => {
   return (
@@ -23,7 +25,9 @@ const App = () => {
         <Route path="/campaigns/new" element={<NewCampaignPage />} />
         <Route path="/campaign-assets" element={<CampaignAssetsPage />} />
         <Route path="/approvals" element={<ApprovalsPage />} />
+        <Route path="/past-approvals" element={<PastApprovalsPage />} />
         <Route path="/campaigns/:id/approvals" element={<CampaignApprovalsPage />} />
+        <Route path="/campaigns/:id/past-approvals" element={<CampaignPastApprovalsPage />} />
         <Route path="/campaigns/:id/assets" element={<CampaignAssetsPage />} />
         <Route path="/campaigns/:id/flow" element={<FlowLayout />}>
           <Route path="upload-assets" element={<AssetIntakePage />} />

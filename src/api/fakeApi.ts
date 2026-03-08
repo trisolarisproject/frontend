@@ -6,6 +6,7 @@ import type {
   Campaign,
   ClarifyingQuestion,
   ConsultPayload,
+  FinalApprovalDecision,
   Video,
 } from "../types";
 import { loadDatabase, saveDatabase, updateDatabase } from "../store/storage";
@@ -126,6 +127,8 @@ const normalizeApprovalDecisions = (
   ...(decisions ?? {}),
 });
 
+const approvalKeys: ApprovalKey[] = ["strategy", "deliveryMethod", "storyboard"];
+
 const defaultJourneyState = (): NonNullable<Campaign["journey"]> => ({
   phase: "intake",
   flowStep: 1,
@@ -159,7 +162,7 @@ const ensureJourney = (campaign: Campaign): Campaign => {
 
   return {
     ...campaign,
-    journey: {
+  journey: {
       ...journey,
       approvals: {
         ...defaultApprovalsState(),
@@ -170,6 +173,9 @@ const ensureJourney = (campaign: Campaign): Campaign => {
       },
       approvalDecisions: {
         ...normalizeApprovalDecisions(journey.approvalDecisions),
+      },
+      approvalHistory: {
+        ...(journey.approvalHistory ?? {}),
       },
     },
   };
@@ -1070,6 +1076,44 @@ export const fakeApi = {
             updatedAt: new Date().toISOString(),
           },
           updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  },
+
+  async submitJourneyApprovals(campaignId: string): Promise<Campaign> {
+    await randomDelay(260, 520);
+    return updateCampaignInDb(campaignId, (campaign) => {
+      const journey = ensureJourney(campaign).journey!;
+      const decisions = normalizeApprovalDecisions(journey.approvalDecisions);
+      const submittedAt = new Date().toISOString();
+      const nextHistory = { ...(journey.approvalHistory ?? {}) };
+
+      approvalKeys.forEach((key) => {
+        const decision = decisions[key];
+        if (decision === "pending") {
+          return;
+        }
+        const savedFeedback = journey.approvalFeedback?.[key]?.trim();
+        nextHistory[key] = {
+          decision: decision as FinalApprovalDecision,
+          feedback: savedFeedback || undefined,
+          submittedAt,
+        };
+      });
+
+      return {
+        ...campaign,
+        journey: {
+          ...journey,
+          approvals: {
+            ...defaultApprovalsState(),
+            updatedAt: submittedAt,
+          },
+          approvalFeedback: {},
+          approvalDecisions: defaultApprovalDecisionsState(),
+          approvalHistory: nextHistory,
+          updatedAt: submittedAt,
         },
       };
     });
