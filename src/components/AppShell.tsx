@@ -121,7 +121,7 @@ const utilityNavItems: NavItem[] = [
               onClick={() => setSidebarOpen(false)}
             >
               <span className="side-link-text">{item.label}</span>
-              {item.to === "/approvals" ? (
+              {item.to === "/approvals" && pendingApprovalsCount > 0 ? (
                 <span className="side-link-badge" aria-label={`${pendingApprovalsCount} pending approvals`}>
                   {pendingApprovalsBadgeLabel}
                 </span>
