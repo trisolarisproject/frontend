@@ -8,6 +8,7 @@ import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { getApprovalDecision } from "../utils/approvals";
 
 const approvalItems: Array<{ key: ApprovalKey; title: string; description: string }> = [
   {
@@ -94,11 +95,7 @@ const CampaignApprovalsPage = () => {
     }
 
     return activeApprovalItems.filter((item) => {
-      const isApproved = campaign.journey?.approvals?.[item.key] ?? false;
-      const savedFeedback = campaign.journey?.approvalFeedback?.[item.key];
-      const decision: ApprovalDecision =
-        campaign.journey?.approvalDecisions?.[item.key] ??
-        (isApproved ? "approved" : savedFeedback ? "declined" : "pending");
+      const decision: ApprovalDecision = getApprovalDecision(campaign, item.key);
       return decision === "pending";
     }).length;
   }, [activeApprovalItems, campaign]);
@@ -300,9 +297,7 @@ const CampaignApprovalsPage = () => {
                 const savedFeedbackNormalized = (savedFeedback ?? "").trim();
                 const draftFeedbackNormalized = feedbackDrafts[item.key].trim();
                 const isFeedbackChanged = draftFeedbackNormalized !== savedFeedbackNormalized;
-                const itemDecision: ApprovalDecision =
-                  campaign.journey?.approvalDecisions?.[item.key] ??
-                  (isApproved ? "approved" : savedFeedback ? "declined" : "pending");
+                const itemDecision: ApprovalDecision = getApprovalDecision(campaign, item.key);
                 const isDeclined = itemDecision === "declined";
 
                 return (
@@ -457,7 +452,7 @@ const CampaignApprovalsPage = () => {
           <div className="flow-footer-primary">
             <span className="muted">
               {pendingItemsCount === 0
-                ? "All items reviewed."
+                ? "Please submit your choices."
                 : `${pendingItemsCount} item${pendingItemsCount > 1 ? "s" : ""} pending`}
             </span>
             <Button

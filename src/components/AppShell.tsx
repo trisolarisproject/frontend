@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import brandLogo from "../../logo_50_by_50.svg";
 import { useLocation } from "react-router-dom";
 import { fakeApi } from "../api/fakeApi";
-import type { ApprovalKey, Campaign } from "../types";
+import { getPendingApprovalsCount } from "../utils/approvals";
 
 interface NavItem {
   to: string;
@@ -28,18 +28,6 @@ const utilityNavItems: NavItem[] = [
   { to: "/audiences", label: "Audiences" },
   { to: "/creative-library", label: "Creative Library" },
 ];
-
-const approvalKeys: ApprovalKey[] = ["strategy", "deliveryMethod", "storyboard"];
-
-const getPendingApprovalsCount = (campaign: Campaign): number => {
-  const approvals = campaign.journey?.approvals;
-  const approvalHistory = campaign.journey?.approvalHistory;
-  if (!approvals) {
-    return approvalKeys.length;
-  }
-
-  return approvalKeys.filter((key) => !approvals[key] && !approvalHistory?.[key]).length;
-};
 
   const AppShell = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);

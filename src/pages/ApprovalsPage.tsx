@@ -5,27 +5,12 @@ import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import PageLayout from "../components/PageLayout";
+import {
+  approvalLabels,
+  getPendingApprovalKeys,
+  needsApprovalSubmission,
+} from "../utils/approvals";
 import type { Campaign } from "../types";
-
-type ApprovalKey = "strategy" | "deliveryMethod" | "storyboard";
-
-const approvalLabels: Record<ApprovalKey, string> = {
-  strategy: "Strategy",
-  deliveryMethod: "Delivery Method",
-  storyboard: "Storyboard",
-};
-
-const approvalKeys: ApprovalKey[] = ["strategy", "deliveryMethod", "storyboard"];
-
-const getPendingApprovals = (campaign: Campaign): ApprovalKey[] => {
-  const approvals = campaign.journey?.approvals;
-  const approvalHistory = campaign.journey?.approvalHistory;
-  if (!approvals) {
-    return approvalKeys;
-  }
-
-  return approvalKeys.filter((key) => !approvals[key] && !approvalHistory?.[key]);
-};
 
 const ApprovalsPage = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -41,8 +26,12 @@ const ApprovalsPage = () => {
   const pendingCampaigns = useMemo(
     () =>
       campaigns
-        .map((campaign) => ({ campaign, pending: getPendingApprovals(campaign) }))
-        .filter((item) => item.pending.length > 0),
+        .map((campaign) => ({
+          campaign,
+          pending: getPendingApprovalKeys(campaign),
+          needsSubmit: needsApprovalSubmission(campaign),
+        }))
+        .filter((item) => item.pending.length > 0 || item.needsSubmit),
     [campaigns]
   );
 
@@ -63,7 +52,7 @@ const ApprovalsPage = () => {
         </Card>
       ) : (
         <div className="stack">
-          {pendingCampaigns.map(({ campaign, pending }) => (
+          {pendingCampaigns.map(({ campaign, pending, needsSubmit }) => (
             <Link
               key={campaign.id}
               className="approvals-card-link"
@@ -78,11 +67,14 @@ const ApprovalsPage = () => {
                   </span>
                 </div>
                 <div className="approvals-status-row">
-                  {pending.map((key) => (
-                    <Badge key={key} tone="warning">
-                      Pending: {approvalLabels[key]}
-                    </Badge>
-                  ))}
+                  {pending.length > 0
+                    ? pending.map((key) => (
+                        <Badge key={key} tone="warning">
+                          Pending: {approvalLabels[key]}
+                        </Badge>
+                      ))
+                    : null}
+                  {needsSubmit ? <Badge tone="warning">Please submit your choices</Badge> : null}
                 </div>
               </Card>
             </Link>
